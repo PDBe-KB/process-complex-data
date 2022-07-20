@@ -45,7 +45,7 @@ mock_names = {
 
 class TestGetComplexPortalData(TestCase):
     def setUp(self) -> None:
-        self.cp = GetComplexPortalData()
+        self.cp = GetComplexPortalData("")
 
     def test_create_component_string(self):
         """
