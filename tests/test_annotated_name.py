@@ -111,5 +111,5 @@ class TestGetAnnotatedName(TestCase):
     def test_read_molecule_names(self, cb):
         an = GetAnnotatedName(self.molecule_name_path, self.molecule_components_path)
         cb.data.return_value = stub_data
-        an.read_molecule_names()
+        an._read_molecule_names()
         print(an.molecule_names)

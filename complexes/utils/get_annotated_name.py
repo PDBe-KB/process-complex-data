@@ -2,6 +2,10 @@ import csv
 
 
 class GetAnnotatedName:
+    """
+    This class contains methods required for adding manually curated complex
+    names to the complex naming process
+    """
     def __init__(self, molecule_name_path, molecule_components_path):
         self.molecule_name_path = molecule_name_path
         self.molecule_components_path = molecule_components_path
@@ -14,14 +18,11 @@ class GetAnnotatedName:
         Gets the path of the csv files that contain the manually curated complexes
         annotation and invokes the methods that read the files.
         """
-        # data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
-        # molecule_name_file = os.path.join(data_dir, "complexes_molecules.csv")
-        # molecule_components_file = os.path.join(data_dir, "complexes_components.csv")
-        self.read_molecule_names(self.molecule_name_path)
-        self.read_components(self.molecule_components_path)
-        self.collate_data()
+        self._read_molecule_names(self.molecule_name_path)
+        self._read_components(self.molecule_components_path)
+        self._collate_data()
 
-    def read_molecule_names(self, molecule_name_file):
+    def _read_molecule_names(self, molecule_name_file):
         """
         Reads the csv file and stores the complex name in a
         dictionary
@@ -38,7 +39,7 @@ class GetAnnotatedName:
 
                 self.molecule_names[complex_id.strip()] = name.strip()
 
-    def read_components(self, component_file):
+    def _read_components(self, component_file):
         """
         Reads the csv file and stores the complex components information
         in a dictionary
@@ -65,7 +66,7 @@ class GetAnnotatedName:
                         row_dict
                     )
 
-    def collate_data(self):
+    def _collate_data(self):
         """
         Aggregates the complexes components and names into a new
         dictionary
@@ -89,13 +90,3 @@ class GetAnnotatedName:
             the complex name
         """
         return self.molecule_info
-
-
-if __name__ == "__main__":
-    gan = GetAnnotatedName(
-        "/Users/sria/desktop/complex-data-process/complexes/data/complexes_molecules.csv",
-        "/Users/sria/desktop/complex-data-process/complexes/data/complexes_components.csv",
-    )
-    gan.get_data()
-    ret = gan.get_molecule_info()
-    print(len(ret))
