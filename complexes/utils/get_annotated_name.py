@@ -1,4 +1,5 @@
 import csv
+import logging
 
 
 class GetAnnotatedName:
@@ -18,8 +19,11 @@ class GetAnnotatedName:
         Gets the path of the csv files that contain the manually curated complexes
         annotation and invokes the methods that read the files.
         """
+        logging.debug("Reading %s" % self.molecule_name_path)
         self._read_molecule_names(self.molecule_name_path)
+        logging.debug("Reading %s" % self.molecule_components_path)
         self._read_components(self.molecule_components_path)
+        logging.debug("Collating data")
         self._collate_data()
 
     def _read_molecule_names(self, molecule_name_file):
