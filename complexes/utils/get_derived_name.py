@@ -1,7 +1,5 @@
 import logging
 
-logger = logging.getLogger()
-
 
 class DeriveName:
     def __init__(self):
@@ -16,7 +14,8 @@ class DeriveName:
             "mitochondrial proton-transporting ATP synthase complex": "ATP synthase, complex V",
             "nucleosome": "Nucleosome, Histone",
             "respiratory chain complex IV": "Respiratory chain complex IV",
-            "mitochondrial respiratory chain complex II": "Mitochondrial respiratory chain complex II",  # noqa: B950
+            "mitochondrial respiratory chain complex II": "Mitochondrial respiratory chain complex II",
+            # noqa: B950
         }
         self.sub_name_mapping = {
             "50S ribosomal protein": "50S ribosome subunit",
@@ -27,20 +26,24 @@ class DeriveName:
             "33S ribosomal protein": "33S ribosome subunit",
             "28S ribosomal protein": "28S ribosome subunit, mitochondrial",
             # mammalian mitochondrial
-            "39S ribosomal protein": "39S ribosome subunit, mitochondrial",  # noqa: B950 # plant mitochondrial
-            "54S ribosomal protein": "54S ribosome subunit, mitochondrial",  # noqa: B950 # yeast mitochondrial
-            "37S ribosomal protein": "37S ribosome subunit , mitochondrial",  # noqa: B950 # yeast mitochondrial
+            "39S ribosomal protein": "39S ribosome subunit, mitochondrial",
+            # noqa: B950 # plant mitochondrial
+            "54S ribosomal protein": "54S ribosome subunit, mitochondrial",
+            # noqa: B950 # yeast mitochondrial
+            "37S ribosomal protein": "37S ribosome subunit , mitochondrial",
+            # noqa: B950 # yeast mitochondrial
         }
         self.combined_name = {
-            "30S ribosome subunit,50S ribosome subunit": "70S ribosome",  # bacterial ribosome
+            "30S ribosome subunit,50S ribosome subunit": "70S ribosome",
+            # bacterial ribosome
             "40S ribosome subunit,60S ribosome subunit": "80S eukaryotic ribosome",
             # eukaryotic ribosome
-            "28S ribosome subunit, mitochondrial,39S ribosome subunit, mitochondrial": "55S mammalian mitochondrial ribosome",  # noqa: B950
-            # mammalian mitochondrial
+            "28S ribosome subunit, mitochondrial,39S ribosome subunit, mitochondrial": "55S mammalian mitochondrial ribosome",
+            # noqa: B950 # mammalian mitochondrial
             "33S ribosome subunit,50S ribosome subunit": "78S plant mitochondrial ribosome",
             # plant mitochondrial ribosome
-            "37S ribosome subunit, mitochondrial,54S ribosome subunit, mitochondrial": "74S yeast mitochondrial ribosome"  # noqa: B950
-            # yeast mitochondrial
+            "37S ribosome subunit, mitochondrial,54S ribosome subunit, mitochondrial": "74S yeast mitochondrial ribosome"
+            # noqa: B950 # yeast mitochondrial
         }
         self.ribosome_go_terms = [
             "ribosome",
@@ -61,19 +64,12 @@ class DeriveName:
             "RF02541",  # Bacterial large subunit ribosomal RNA
             "RF02542",  # Microsporidia small subunit ribosomal RNA
             "RF02543",  # Eukaryotic large subunit ribosomal RNA
-            "RF02545",  # Trypanosomatid mitochondrial small subunit ribosomal RNA
-            "RF02546",  # Trypanosomatid mitochondrial large subunit ribosomal RNA
+            "RF02545",
+            # Trypanosomatid mitochondrial small subunit ribosomal RNA
+            "RF02546",
+            # Trypanosomatid mitochondrial large subunit ribosomal RNA
         ]
         self.trna = ["RF00005", "RF01852"]  # tRNA  # selenocystine tRNA
-
-    def get_ribosome_rna_accessions(self):
-        """
-        Returns a list of ribosome Rfam accessions
-
-        Returns:
-            list: ribosome Rfam accessions
-        """
-        return self.ribosomal_rna_accessions
 
     def get_name_from_go(self, go_list):
         """
@@ -175,7 +171,8 @@ class DeriveName:
             logging.debug("has over {} protein subunits".format(cut_off))
             if len(derived_names) > 1:
                 derived_name_string = ",".join(sorted(list(derived_names)))
-                logging.debug("derived name string: {}".format(derived_name_string))
+                logging.debug(
+                    "derived name string: {}".format(derived_name_string))
                 if derived_name_string in self.combined_name:
                     updated_name = self.combined_name.get(derived_name_string)
                     if updated_name:
