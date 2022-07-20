@@ -7,6 +7,7 @@ class GetAnnotatedName:
     This class contains methods required for adding manually curated complex
     names to the complex naming process
     """
+
     def __init__(self, molecule_name_path, molecule_components_path):
         self.molecule_name_path = molecule_name_path
         self.molecule_components_path = molecule_components_path
@@ -66,7 +67,8 @@ class GetAnnotatedName:
                             accession.strip(), stoichiometry.strip()
                         ),
                     }
-                    self.molecule_components.setdefault(complex_id.strip(), []).append(
+                    self.molecule_components.setdefault(complex_id.strip(),
+                                                        []).append(
                         row_dict
                     )
 
