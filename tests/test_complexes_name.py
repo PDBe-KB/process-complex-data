@@ -689,6 +689,8 @@ class TestComplexName(TestCase):
         self.password = "mock_password"
         self.bolt_uri = "neo4j://"
         self.csv_path = "test_path"
+        # might need to remove this
+        self.complex_portal_path = "pub/databases/IntAct/current/various/complex2pdb/"
 
     def test_complex_name(self):
         # test whether the method is returning complex name for general cases
@@ -698,7 +700,8 @@ class TestComplexName(TestCase):
             self.password,
             self.csv_path,
             os.path.join("tests", "data", "complexes_molecules.csv"),
-            os.path.join("tests", "data", "complexes_components.csv")
+            os.path.join("tests", "data", "complexes_components.csv"),
+            self.complex_portal_path,
         )
         complex_obj.complex_data = mock_pdb_complexes_data_one
         complex_obj.process_complex_name()
@@ -715,7 +718,8 @@ class TestComplexName(TestCase):
             self.password,
             self.csv_path,
             os.path.join("tests", "data", "complexes_molecules.csv"),
-            os.path.join("tests", "data", "complexes_components.csv")
+            os.path.join("tests", "data", "complexes_components.csv"),
+            self.complex_portal_path,
         )
         complex_obj.complex_portal_entries = (
             mock_complex_portal_per_component_string_two
@@ -745,7 +749,8 @@ class TestComplexName(TestCase):
             self.password,
             self.csv_path,
             os.path.join("tests", "data", "complexes_molecules.csv"),
-            os.path.join("tests", "data", "complexes_components.csv")
+            os.path.join("tests", "data", "complexes_components.csv"),
+            self.complex_portal_path,
         )
         complex_obj.complex_data = mock_pdb_complexes_data_three
         complex_obj.process_complex_name()
@@ -766,7 +771,8 @@ class TestComplexName(TestCase):
             self.password,
             self.csv_path,
             os.path.join("tests", "data", "complexes_molecules.csv"),
-            os.path.join("tests", "data", "complexes_components.csv")
+            os.path.join("tests", "data", "complexes_components.csv"),
+            self.complex_portal_path,
         )
         complex_obj.complex_data = mock_pdb_complexes_data_four
         complex_obj.process_complex_name()
@@ -783,7 +789,8 @@ class TestComplexName(TestCase):
             self.password,
             self.csv_path,
             os.path.join("tests", "data", "complexes_molecules.csv"),
-            os.path.join("tests", "data", "complexes_components.csv")
+            os.path.join("tests", "data", "complexes_components.csv"),
+            self.complex_portal_path,
         )
         complex_obj.complex_portal_entries = (
             mock_complex_portal_per_component_string_five
@@ -812,7 +819,8 @@ class TestComplexName(TestCase):
             self.password,
             self.csv_path,
             os.path.join("tests", "data", "complexes_molecules.csv"),
-            os.path.join("tests", "data", "complexes_components.csv")
+            os.path.join("tests", "data", "complexes_components.csv"),
+            self.complex_portal_path,
         )
         complex_obj.complex_data = mock_pdb_complexes_data_six
         complex_obj.process_complex_name()
@@ -833,7 +841,8 @@ class TestComplexName(TestCase):
             self.password,
             self.csv_path,
             os.path.join("tests", "data", "complexes_molecules.csv"),
-            os.path.join("tests", "data", "complexes_components.csv")
+            os.path.join("tests", "data", "complexes_components.csv"),
+            self.complex_portal_path,
         )
         complex_obj.complex_data = mock_pdb_complexes_data_seven
         complex_obj.process_complex_name()
@@ -868,7 +877,8 @@ class TestComplexName(TestCase):
             self.password,
             self.csv_path,
             os.path.join("tests", "data", "complexes_molecules.csv"),
-            os.path.join("tests", "data", "complexes_components.csv")
+            os.path.join("tests", "data", "complexes_components.csv"),
+            self.complex_portal_path,
         )
         complex_obj.complex_data = mock_pdb_complexes_data_nine
         complex_obj.process_complex_name()
