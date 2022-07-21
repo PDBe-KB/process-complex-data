@@ -467,15 +467,15 @@ def main():
     )
 
     complex.get_complex_portal_data()
-    # complex.drop_PDBComplex_nodes()
+    complex.drop_PDBComplex_nodes()
     complex.process_assembly_data()
-    # complex.create_graph_relationships()
+    complex.create_graph_relationships()
     # complex.drop_existing_subcomplex_relationships()
-    # complex.create_subcomplex_relationships()
-    # complex.export_csv()
+    complex.create_subcomplex_relationships()
+    complex.export_csv()
 
 
 if __name__ == "__main__":
     start_time = time.time()
     main()
-    print("--- %s seconds ---" % (time.time() - start_time))
+    print("Process one takes: --- %s seconds ---" % (time.time() - start_time))
