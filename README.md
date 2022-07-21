@@ -98,6 +98,17 @@ complexes_master.csv
 |2e36844b6635d060cc866fdb74701fc4|PDB-CPX-100025|A0A023DFE8_6_1220594|                         |6n9r_1                            |Putative hydrolase                             |                    |protein name from UniProt|
 |35ef47e0f84d0bbd4f1f1a8400fc6fe3|PDB-CPX-100026|A0A023GPI4_1_152923 |                         |2m6j_1                            |Toxin AbTx                                     |                    |protein name from UniProt|
 
+# Dependencies
 
+See [requirements.txt](https://github.com/PDBe-KB/process-complex-data/blob/development/requirements.txt)
 
+# Authors
+- **Sri Devan Appasamy** (initial work)
+- **Mihaly Varadi** (review) 
 
+# License
+TODO
+
+# Acknowledgements
+We would like to acknowledge the PDBe team for their help both via coding
+and consultation.
