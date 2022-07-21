@@ -15,12 +15,12 @@ from complexes.utils.get_annotated_name import GetAnnotatedName
 from complexes.utils.get_derived_name import DeriveName
 from complexes.utils.get_data_from_complex_portal_ftp import GetComplexPortalData
 import os
+import time
 
 name_exclude_list = ["subunit", "component", "chain"]
 
 
 class ProcessComplexName:
-    # def __init__(self, complex_data):
     def __init__(
         self,
         bolt_uri,
@@ -29,15 +29,15 @@ class ProcessComplexName:
         csv_path,
         molecule_name_path,
         molecule_components_path,
+        complex_portal_path,
     ):
-        # self._driver = neo4j.GraphDatabase.driver(bolt_uri, auth=(username, password))
-        # self.complex_data = complex_data
         self.bolt_host = bolt_uri
         self.username = username
         self.password = password
         self.csv_path = csv_path
         self.molecule_name_path = molecule_name_path
         self.molecule_components_path = molecule_components_path
+        self.complex_portal_path = complex_portal_path
         self.complex_data = {}
         self.complex_data_dict = OrderedDict()
         self.complex_portal_entries = {}
@@ -129,21 +129,21 @@ class ProcessComplexName:
             file_csv.writerow(["pdb_complex_id", *headers])
             for key, val in self.complex_data_dict.items():
                 file_csv.writerow([key] + [val.get(i, "") for i in headers])
-        print("Complexes names file has been produced")
+        print("Complexes_names file has been produced")
 
     def get_complex_portal_entries(self):
         """
         Get complexes related data from Complex Portal
         """
         print("starting getting complex portal entries")
-        cd = GetComplexPortalData()
+        cd = GetComplexPortalData(self.complex_portal_path)
         cd.run_process()
-        self.complex_portal_entries = cd.get_complex_portal_per_component_string()
+        self.complex_portal_entries = cd.complex_portal_per_component_string
         self.complex_portal_entries_no_stoch = (
-            cd.get_complex_portal_component_string_no_stoch()
+            cd.complex_portal_per_component_string_no_stoch
         )
-        self.complex_portal_names = cd.get_complex_portal_names()
-        self.complex_portal_dict = cd.get_complex_portal_component_dict()
+        self.complex_portal_names = cd.complex_portal_names
+        self.complex_portal_dict = cd.complex_portal_component_dict
         print("finished getting complex portal entries")
 
     def get_pdb_complex_entries(self):
@@ -783,6 +783,13 @@ def run():
         help="Path to input CSV file containing manually curated complexes components",
     )
 
+    parser.add_argument(
+        "-i3",
+        "--complex-portal-path",
+        required=True,
+        help="Path to Complex Portal ftp site",
+    )
+
     args = parser.parse_args()
 
     complex = ProcessComplexName(
@@ -792,10 +799,13 @@ def run():
         csv_path=args.csv_path,
         molecule_name_path=args.molecule_name_path,
         molecule_components_path=args.molecule_components_path,
+        complex_portal_path=args.complex_portal_path,
     )
 
     complex.run_processes()
 
 
 if __name__ == "__main__":
+    start_time = time.time()
     run()
+    print("Process two takes: --- %s seconds ---" % (time.time() - start_time))
