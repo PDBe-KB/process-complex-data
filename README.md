@@ -18,9 +18,8 @@ Install dependencies with pip
 
 `pip install -r requirements.txt`
 
-usage: run_complexes.py -b <BOLT_URL> -u <NEO4J_USERNAME> -p <NEO4J_PASSWORD> -o <OUTPUT_CSV_PATH> -i1 <INPUT_MOLECULES_NAME_PATH> -i2 <INPUT_MOLECULES_COMPONENTS_PATH>
-
-`python complexes/run_complexes.py -b <bolt_url> -u <username> -p <password> -o <output_csv_path> -i1 <input_molecules_name_path> -i2 <input_molecules_components_path>`
+usage:   
+`python complexes/run_complexes.py -b <bolt_url> -u <username> -p <password> -o <output_csv_path> -i1 <input_molecules_name_path> -i2 <input_molecules_components_path> -i3 <complex_portal_path>`
 
 # Package explanation
 
