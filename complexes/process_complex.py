@@ -28,9 +28,6 @@ class Neo4JProcessComplex:
         self.unmapped_polymer_params_list = []
         self.complexes_unique_to_complex_portal = []
 
-    def close(self):
-        self._driver.close()
-
     def use_persistent_identifier(
         self, hash_str, accession, complex_portal_id, entries
     ):
