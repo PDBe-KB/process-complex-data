@@ -47,7 +47,7 @@ In the final step, the two CSV files are merged together into a single CSV file 
 
 # Expected content of the CSV files (examples)
 
-complexes_mapping.csv
+1. "**complexes_mapping.csv**"
 
 |md5_obj                         |pdb_complex_id|accession           |complex_portal_id|assemblies                        |
 |--------------------------------|--------------|--------------------|-----------------|----------------------------------|
@@ -64,7 +64,7 @@ complexes_mapping.csv
 |2e36844b6635d060cc866fdb74701fc4|PDB-CPX-100025|A0A023DFE8_6_1220594|                 |6n9r_1                            |
 |35ef47e0f84d0bbd4f1f1a8400fc6fe3|PDB-CPX-100026|A0A023GPI4_1_152923 |                 |2m6j_1                            |
 
-complexes_names.csv
+2. "**complexes_names.csv**"
 
 |pdb_complex_id                  |complex_name  |derived_complex_name|complex_name_type        |
 |--------------------------------|--------------|--------------------|-------------------------|
@@ -81,7 +81,7 @@ complexes_names.csv
 |PDB-CPX-100025                  |Putative hydrolase|                    |protein name from UniProt|
 |PDB-CPX-100026                  |Toxin AbTx    |                    |protein name from UniProt|
 
-complexes_master.csv
+3. "**complexes_master.csv**"
 
 |md5_obj                         |pdb_complex_id|accession           |complex_portal_id        |assemblies                        |complex_name                                   |derived_complex_name|complex_name_type        |
 |--------------------------------|--------------|--------------------|-------------------------|----------------------------------|-----------------------------------------------|--------------------|-------------------------|
