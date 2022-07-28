@@ -1,12 +1,6 @@
 # Basic information
 
-This repository contains code for processes that will aggregate complexes data from the PDBe graph database, assign identifiers and create names for macromolecular complexes.
-
-In general, it will do the following:
-- Aggregate complexes data from the PDBe graph database
-- Assign unique identifier for each unique complex composition
-- Build relationships between several complexes related nodes in the graph database
-- Assign name for each unique complex composition
+This repository contains code for a python package that will aggregate macromolecular complexes data from the PDBe graph database, assign identifiers and create names for them.
 
 # Usage
 
@@ -20,6 +14,18 @@ Install dependencies with pip
 
 usage:   
 `python complexes/run_complexes.py -b <bolt_url> -u <username> -p <password> -o <output_csv_path> -i1 <input_molecules_name_path> -i2 <input_molecules_components_path> -i3 <complex_portal_path>`
+
+A short explanation for each command line argument is given below:
+
+- bolt_url = Neo4j bolt url
+- username = Neo4j username
+- password = Neo4j password
+- output_csv_path = The path to the output CSV files
+- input_molecules_name_path = The path to the input "complexes_molecules.csv" file
+- input_molecules_components_path = The path to the input "complexes_components.csv" file
+- complex_portal_path = The path to the Complex Portal FTP site
+
+The manually curated complexes CSV files ("complexes_molecules.csv" & "complexes_components.csv") were prepared by Romana
 
 # Package explanation
 
