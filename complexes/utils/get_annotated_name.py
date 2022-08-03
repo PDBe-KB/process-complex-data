@@ -85,14 +85,3 @@ class GetAnnotatedName:
             if components:
                 components_str = ",".join(sorted(components))
                 self.molecule_info[components_str] = complex_name
-
-    def get_molecule_info(self):
-        """
-        Returns a dictionary of complexes containing their composition and
-        names
-
-        Returns:
-            dict: The key of the dict is the complex components str while the value is
-            the complex name
-        """
-        return self.molecule_info

@@ -45,8 +45,6 @@ class GetComplexPortalData:
     def _create_component_string(self):
         """
         Creates the component string, e.g. 'CPX-7381': 'P27540_1,Q16665_1'
-        Returns: None
-
         """
         complex_portal_component_dict_no_stoch = {}
         complex_portal_component_dict = {}

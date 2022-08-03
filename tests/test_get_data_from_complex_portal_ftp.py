@@ -1,5 +1,6 @@
 from complexes.utils.get_data_from_complex_portal_ftp import GetComplexPortalData
 from unittest import TestCase
+from unittest.mock import patch
 
 
 mock_components = [
@@ -80,3 +81,30 @@ class TestGetComplexPortalData(TestCase):
         self.assertEqual(
             self.cp.complex_portal_names["CPX-7114"], mock_names["CPX-7114"]
         )
+
+    @patch("complexes.utils.get_data_from_complex_portal_ftp.GetComplexPortalData._get_data", side_effect=[[1, 2], [3, 4], [5, 6], [7, 8]])
+    @patch("complexes.utils.get_data_from_complex_portal_ftp.GetComplexPortalData._create_component_string")
+    @patch("complexes.utils.get_data_from_complex_portal_ftp.GetComplexPortalData._create_component_name_dict")
+    def test_run_process(self, mock1, mock2, mock3):
+        """
+        Test if the main process runs
+        Note that this will look at real data from IntAct
+
+        """
+        # mock1.return_value = "foo"
+        mock2.return_value = None
+        mock3.return_value = None
+
+        gcpd = GetComplexPortalData("")
+        gcpd.run_process()
+
+        self.assertEqual(gcpd.complex_portal_components, [1, 2, 5, 6])
+
+
+    def test_get_data(self):
+        gcpd = GetComplexPortalData("")
+        gcpd.complex_portal_ftp_root = "FOO"
+        gcpd.complex_portal_https_root = "BAR"
+        self.assertRaises(TypeError, gcpd._get_data('subfolder', 'filename'))
+
+

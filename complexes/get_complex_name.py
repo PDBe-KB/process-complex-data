@@ -156,14 +156,14 @@ class ProcessComplexName:
         """
         print("starting getting pdb complex entries")
         cd = GetComplexData(self.bolt_host, self.username, self.password)
-        self.complex_data = cd.get_pdb_complex_data()
+        self.complex_data = cd.pdb_complexes
         print("finished getting pdb complex entries")
         return self.complex_data
 
     def get_annotated_names(self):
         gan = GetAnnotatedName(self.molecule_name_path, self.molecule_components_path)
         gan.get_data()
-        self.annotated_names = gan.get_molecule_info()
+        self.annotated_names = gan.molecule_info
 
     def check_annotated_name(self):
         """

@@ -19,20 +19,20 @@ class GetComplexData:
         self.neo4j_username = username
         self.neo4j_password = password
 
-    def populate_molecule_names_from_entity(self):
+    def _populate_molecule_names_from_entity(self):
         """
         Stores the molecules description obtained from
         entity node into a dictionary
         """
         query = qy.ENTITY_QUERY
-        mappings = self.run_query(query=query)
+        mappings = self._run_query(query=query)
 
         for row in mappings:
             entity_uniqid = row.get("entity_uniqid")
             description = row.get("description")
             self.molecule_names[entity_uniqid] = description
 
-    def populate_molecule_names_from_uniprot_or_rfam(self, db_type):
+    def _populate_molecule_names_from_uniprot_or_rfam(self, db_type):
         """
         Stores the molecules description obtained from
         uniprot/rfam node into a dictionary
@@ -46,23 +46,14 @@ class GetComplexData:
         else:
             query = qy.RFAM_QUERY
 
-        mappings = self.run_query(query=query)
+        mappings = self._run_query(query=query)
 
         for row in mappings:
             accession = row.get("accession")
             name = row.get("description")
             self.molecule_names[accession] = name
 
-    def get_graph(self):
-        """
-        Create an instance of Neo4j with the connection
-        parameters
-        """
-        self.graph = Graph(
-            self.bolt_host, user=self.neo4j_username, password=self.neo4j_password
-        )
-
-    def run_query(self, query):
+    def _run_query(self, query):
         """
         Runs Neo4J database query and returns its result
 
@@ -73,7 +64,10 @@ class GetComplexData:
             obj: result of Neo4j query
         """
         if not self.graph:
-            self.get_graph()
+            self.graph = Graph(
+                self.bolt_host, user=self.neo4j_username,
+                password=self.neo4j_password
+            )
         return self.graph.run(query)
 
     def get_pdb_complex_data(self):
@@ -86,12 +80,12 @@ class GetComplexData:
             value is a nested dictionary containing information
             related to complexes
         """
-        self.populate_molecule_names_from_uniprot_or_rfam("uniprot")
-        self.populate_molecule_names_from_uniprot_or_rfam("rfam")
-        self.populate_molecule_names_from_entity()
+        self._populate_molecule_names_from_uniprot_or_rfam("uniprot")
+        self._populate_molecule_names_from_uniprot_or_rfam("rfam")
+        self._populate_molecule_names_from_entity()
 
         print("Get PDB Complex Data - START")
-        mappings = self.run_query(qy.PDB_COMPLEX_QUERY)
+        mappings = self._run_query(qy.PDB_COMPLEX_QUERY)
         for row in mappings:
 
             pdb_complex_id = row.get("complex_id")
@@ -208,8 +202,4 @@ class GetComplexData:
                 ).append(component)
 
         print("Get PDB Complex Data - END")
-        return self.pdb_complexes
-
-    def return_pdb_data(self):
-        # Return the complexes data dictionary
         return self.pdb_complexes
