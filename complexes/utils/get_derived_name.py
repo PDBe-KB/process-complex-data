@@ -3,6 +3,7 @@ import logging
 
 class DeriveName:
     def __init__(self):
+        mrcc2 = "mitochondrial respiratory chain complex II"
         self.go_name_mapping = {
             "hemoglobin complex": "Hemoglobin complex",
             "proteasome core complex": "Proteasome core complex",
@@ -14,7 +15,7 @@ class DeriveName:
             "mitochondrial proton-transporting ATP synthase complex": "ATP synthase, complex V",
             "nucleosome": "Nucleosome, Histone",
             "respiratory chain complex IV": "Respiratory chain complex IV",
-            "mitochondrial respiratory chain complex II": "Mitochondrial respiratory chain complex II",
+            mrcc2: "Mitochondrial respiratory chain complex II",
             # noqa: B950
         }
         self.sub_name_mapping = {
@@ -34,15 +35,29 @@ class DeriveName:
             # noqa: B950 # yeast mitochondrial
         }
         self.combined_name = {
-            "30S ribosome subunit,50S ribosome subunit": "70S ribosome",
+            ",".join(["30S ribosome subunit", "50S ribosome subunit"]): "70S ribosome",
             # bacterial ribosome
             "40S ribosome subunit,60S ribosome subunit": "80S eukaryotic ribosome",
             # eukaryotic ribosome
-            "28S ribosome subunit, mitochondrial,39S ribosome subunit, mitochondrial": "55S mammalian mitochondrial ribosome",
+            ",".join(
+                [
+                    "28S ribosome subunit",
+                    "mitochondrial,39S ribosome subunit",
+                    "mitochondrial",
+                ]
+            ): "55S mammalian mitochondrial ribosome",
             # noqa: B950 # mammalian mitochondrial
-            "33S ribosome subunit,50S ribosome subunit": "78S plant mitochondrial ribosome",
+            ",".join(
+                ["33S ribosome subunit", "50S ribosome subunit"]
+            ): "78S plant mitochondrial ribosome",
             # plant mitochondrial ribosome
-            "37S ribosome subunit, mitochondrial,54S ribosome subunit, mitochondrial": "74S yeast mitochondrial ribosome"
+            ",".join(
+                [
+                    "37S ribosome subunit",
+                    "mitochondrial,54S ribosome subunit",
+                    "mitochondrial",
+                ]
+            ): "74S yeast mitochondrial ribosome"
             # noqa: B950 # yeast mitochondrial
         }
         self.ribosome_go_terms = [
@@ -171,8 +186,7 @@ class DeriveName:
             logging.debug("has over {} protein subunits".format(cut_off))
             if len(derived_names) > 1:
                 derived_name_string = ",".join(sorted(list(derived_names)))
-                logging.debug(
-                    "derived name string: {}".format(derived_name_string))
+                logging.debug("derived name string: {}".format(derived_name_string))
                 if derived_name_string in self.combined_name:
                     updated_name = self.combined_name.get(derived_name_string)
                     if updated_name:

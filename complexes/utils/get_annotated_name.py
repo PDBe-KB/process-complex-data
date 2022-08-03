@@ -17,8 +17,8 @@ class GetAnnotatedName:
 
     def get_data(self):
         """
-        Gets the path of the csv files that contain the manually curated complexes
-        annotation and invokes the methods that read the files.
+        Gets the path of the csv files that contain the manually curated
+        complexes annotation and invokes the methods that read the files.
         """
         logging.debug("Reading %s" % self.molecule_name_path)
         self._read_molecule_names(self.molecule_name_path)
@@ -33,7 +33,8 @@ class GetAnnotatedName:
         dictionary
 
         Args:
-            molecule_name_file (csv file): Contains the description of the complex
+            molecule_name_file (csv file): Contains the description
+            of the complex
         """
         with open(molecule_name_file) as in_file:
             data = csv.DictReader(in_file)
@@ -50,7 +51,8 @@ class GetAnnotatedName:
         in a dictionary
 
         Args:
-            component_file (csv file): Contains the components of a complex with their
+            component_file (csv file): Contains the components of
+            a complex with their
             accessions
         """
         with open(component_file) as in_file:
@@ -67,8 +69,7 @@ class GetAnnotatedName:
                             accession.strip(), stoichiometry.strip()
                         ),
                     }
-                    self.molecule_components.setdefault(complex_id.strip(),
-                                                        []).append(
+                    self.molecule_components.setdefault(complex_id.strip(), []).append(
                         row_dict
                     )
 
