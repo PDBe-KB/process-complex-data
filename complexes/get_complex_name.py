@@ -1,16 +1,8 @@
 import argparse
 from collections import Counter, OrderedDict
 import csv
-
-# from pdbecommon.graph import neo4j
-# import neo4j
 import logging
-
-# from collections import OrderedDict
-# from orc.base.log import logger
-
 from complexes.utils.get_data_from_graph_db import GetComplexData
-
 from complexes.utils.get_annotated_name import GetAnnotatedName
 from complexes.utils.get_derived_name import DeriveName
 from complexes.utils.get_data_from_complex_portal_ftp import GetComplexPortalData
@@ -49,9 +41,7 @@ class ProcessComplexName:
         self.annotated_names = {}
         self.antibody_names = {}
         self.prd_names = {}
-
         self.summary_data = []
-
         self.monomer_data = {}
         self.pdb_data = {}
         self.all_compositions = []
@@ -104,25 +94,21 @@ class ProcessComplexName:
         self.entry_symmetry = {}
         self.complex_name_type = ""
 
-    def run_processes(self):
-        self.get_complex_portal_entries()
-        self.get_pdb_complex_entries()
-        self.process_complex_name()
-        self.export_csv()
+    def run_process(self):
+        self._get_complex_portal_entries()
+        self._get_pdb_complex_entries()
+        self._process_complex_name()
+        self._export_csv()
 
-    def export_csv(self):
+    def _export_csv(self):
         headers = [
             # "complex_portal_id",
             "complex_name",
             "derived_complex_name",
             "complex_name_type",
         ]
-        # base_path = Path.cwd()
         base_path = self.csv_path
         filename = "complexes_names.csv"
-        # csv_filename = (
-        #     base_path.joinpath("complexes").joinpath("output").joinpath(filename)
-        # )  # noqa: F841
         complete_path = os.path.join(base_path, filename)
         with open(complete_path, "w", newline="") as complex_names:
             file_csv = csv.writer(complex_names)
@@ -131,7 +117,7 @@ class ProcessComplexName:
                 file_csv.writerow([key] + [val.get(i, "") for i in headers])
         print("Complexes_names file has been produced")
 
-    def get_complex_portal_entries(self):
+    def _get_complex_portal_entries(self):
         """
         Get complexes related data from Complex Portal
         """
@@ -146,7 +132,7 @@ class ProcessComplexName:
         self.complex_portal_dict = cd.complex_portal_component_dict
         print("finished getting complex portal entries")
 
-    def get_pdb_complex_entries(self):
+    def _get_pdb_complex_entries(self):
         """
         Get complexes related data from PDB graph database
 
@@ -160,11 +146,6 @@ class ProcessComplexName:
         print("finished getting pdb complex entries")
         return self.complex_data
 
-    def get_annotated_names(self):
-        gan = GetAnnotatedName(self.molecule_name_path, self.molecule_components_path)
-        gan.get_data()
-        self.annotated_names = gan.molecule_info
-
     def check_annotated_name(self):
         """
         Returns the manually curated complex name if present
@@ -173,12 +154,16 @@ class ProcessComplexName:
             str: manually curated complex name
         """
         if not self.annotated_names:
-            self.get_annotated_names()
+            gan = GetAnnotatedName(
+                self.molecule_name_path, self.molecule_components_path
+            )
+            gan.get_data()
+            self.annotated_names = gan.molecule_info
         unp_components_with_stoch_string = ",".join(sorted(self.unp_only_components))
         annotated_name = self.annotated_names.get(unp_components_with_stoch_string)
         return annotated_name
 
-    def get_complex_portal_id(self, component_string):
+    def _get_complex_portal_id(self, component_string):
         """
         Returns the Complex Portal ID for the given complex
         composition str
@@ -191,23 +176,7 @@ class ProcessComplexName:
         """
         return str(self.complex_portal_entries.get(component_string, ""))
 
-    def get_complex_portal_id_no_stoch(self, component_string_no_stoch):
-        """
-        Returns the Complex Portal ID for the given complex
-        composition str without stoichiometry information
-
-        Args:
-            component_string (str): complex composition string without
-            stoichiometry
-
-        Returns:
-            str: Complex Portal ID
-        """
-        return str(
-            self.complex_portal_entries_no_stoch.get(component_string_no_stoch, "")
-        )
-
-    def get_partial_complex_portal_mapping(self):
+    def _get_partial_complex_portal_mapping(self):
         """
         Gets the Complex Portal entry that has partial mapping to the
         protein components
@@ -227,7 +196,7 @@ class ProcessComplexName:
 
         return results
 
-    def process_partial_complex_portal_mapping(self):
+    def _process_partial_complex_portal_mapping(self):
         """
         Processes and assigns name to complexes that have partial
         mappings to Complex Portal entries
@@ -280,7 +249,7 @@ class ProcessComplexName:
 
         return complex_name, potential_name_list
 
-    def get_complex_portal_name(self):
+    def _get_complex_portal_name(self):
         """
         Returns complex name from Complex Portal if a match is present
 
@@ -308,14 +277,14 @@ class ProcessComplexName:
                 complex_name = complex_name + " and additional unmapped proteins"
         return complex_name
 
-    def get_complex_name(self):
+    def _get_complex_name(self):
         """
         Returns the complex name
 
         Returns:
             str: complex_name
         """
-        complex_name = self.get_complex_portal_name()
+        complex_name = self._get_complex_portal_name()
         if complex_name:
             print(complex_name)
             logging.debug(complex_name)
@@ -369,7 +338,7 @@ class ProcessComplexName:
 
         return complex_name
 
-    def check_ribosome(self):
+    def _check_ribosome(self):
         """
         Checks whether the complex is a ribosome
 
@@ -394,7 +363,7 @@ class ProcessComplexName:
 
         return potential_name
 
-    def check_go(self):
+    def _check_go(self):
         """
         Checks whether the complex has a GO term associated with it and
         assigns the predefined derived name if it matches
@@ -410,7 +379,7 @@ class ProcessComplexName:
                 self.derived_complex_name_list.append(potential_name)
         return found_match
 
-    def check_trna(self):
+    def _check_trna(self):
         """
         Checks whether the complex has tRNA
         """
@@ -418,15 +387,12 @@ class ProcessComplexName:
             if DeriveName().has_trna(self.rna_polymer_accessions):
                 self.derived_complex_name_list.append("tRNA")
 
-    def process_complex_name(self):  # noqa: C901
+    def _process_complex_name(self):  # noqa: C901
         """
         The primary method that contains the logic for processing
         complexes data from Complex Portal and PDB to assign
         names to the complexes
         """
-        # self.get_complex_portal_entries()
-
-        # pdb_complex_data = self.get_pdb_complex_entries()
         for complex_id in self.complex_data:
 
             self.all_protein = True
@@ -592,25 +558,12 @@ class ProcessComplexName:
             unp_components_with_stoch_string = ",".join(
                 sorted(self.unp_only_components)
             )
-            self.complex_portal_id = self.get_complex_portal_id(
+            self.complex_portal_id = self._get_complex_portal_id(
                 components_with_stoch_string
             )
-            self.unp_only_complex_portal_id = self.get_complex_portal_id(
+            self.unp_only_complex_portal_id = self._get_complex_portal_id(
                 unp_components_with_stoch_string
             )
-
-            # components_with_no_stoch_string = ",".join(
-            #     sorted(self.unp_only_components_no_stoch)
-            # )
-            # complex_portal_id_no_stoch = self.get_complex_portal_id_no_stoch(
-            #     components_with_no_stoch_string
-            # )
-
-            # complex_portal_id_different_stoch = (
-            #     complex_portal_id_no_stoch
-            #     if complex_portal_id_no_stoch != self.unp_only_complex_portal_id
-            #     else ""
-            # )
 
             self.unp_component_dict_no_stoch_per_complex_id[
                 complex_id
@@ -633,7 +586,7 @@ class ProcessComplexName:
                     self.common_go_terms.append(go_term)
 
             # get a name for the complex
-            complex_name = self.get_complex_name()
+            complex_name = self._get_complex_name()
 
             # # check annotated names
             if not complex_name and self.unp_only_components:
@@ -647,20 +600,20 @@ class ProcessComplexName:
             if not complex_name and self.unp_only_components:
 
                 self.partial_mapping_to_complex_portal = (
-                    self.get_partial_complex_portal_mapping()
+                    self._get_partial_complex_portal_mapping()
                 )
                 if self.partial_mapping_to_complex_portal:
                     (
                         complex_name,
                         potential_name_list,
-                    ) = self.process_partial_complex_portal_mapping()
+                    ) = self._process_partial_complex_portal_mapping()
                     if potential_name_list:
                         self.derived_complex_name_list.extend(potential_name_list)
                         self.complex_name_type = "complex portal super-complex"
 
             # common complexes identified by GO
             if not complex_name:
-                found_match = self.check_go()
+                found_match = self._check_go()
                 if found_match:
                     self.complex_name_type = "GO"
 
@@ -671,7 +624,7 @@ class ProcessComplexName:
                     and self.rna_polymer_components
                 ):
                     logging.debug("finding potential name for {}".format(complex_id))
-                    potential_name = self.check_ribosome()
+                    potential_name = self._check_ribosome()
 
                     if potential_name:
                         logging.debug(potential_name)
@@ -704,7 +657,7 @@ class ProcessComplexName:
                     self.complex_name_type = "heterodimer"
 
             # check for tRNA
-            self.check_trna()
+            self._check_trna()
 
             # join the names together to produce the final derived name
             if self.derived_complex_name_list:
@@ -725,17 +678,12 @@ class ProcessComplexName:
                 homo_hetero = "Hetero"
             """
 
-            # print(f"Complex ID is:{complex_id} | Complex name is:{complex_name}
-            # | Derived complex name is: {derived_complex_name}")
-
             self.complex_data_dict[complex_id] = {
                 # "complex_portal_id": self.complex_portal_id,
                 "complex_name": complex_name,
                 "derived_complex_name": derived_complex_name,
                 "complex_name_type": self.complex_name_type,
             }
-        # print(self.complex_data_dict)
-        # self.export_csv()
 
 
 def run():
@@ -802,7 +750,7 @@ def run():
         complex_portal_path=args.complex_portal_path,
     )
 
-    complex.run_processes()
+    complex.run_process()
 
 
 if __name__ == "__main__":
