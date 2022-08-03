@@ -51,10 +51,7 @@ class Neo4JProcessComplex:
             pdb_complex_id = self.reference_mapping.get(hash_str).get("pdb_complex_id")
         # when the dict is empty
         elif len(self.reference_mapping) == 0:
-            # identifier = len(self.reference_mapping) + 1
             pdb_complex_id = basic_PDB_complex_str + str(initial_num)
-            # print("This is new complex id {pdb_complex_id}")
-            # print(complex_portal_id)
             self.reference_mapping[hash_str] = {
                 "pdb_complex_id": pdb_complex_id,
                 "complex_portal_id": complex_portal_id,
@@ -63,7 +60,6 @@ class Neo4JProcessComplex:
             }
         # when the dict has one or more elems
         elif len(self.reference_mapping) >= 1:
-            # last_dict_key = list(self.reference_mapping.keys())[-1]
             last_dict_key = next(reversed(self.reference_mapping))
             last_pdb_complex_id = self.reference_mapping[last_dict_key][
                 "pdb_complex_id"
@@ -77,33 +73,7 @@ class Neo4JProcessComplex:
                 "accession": accession,
                 "entries": entries,
             }
-
         return pdb_complex_id
-
-    # def check_reference_data(self):
-    #     conn = create_db_connection(self.db_conn_str)
-
-    #     with conn as connection:
-    #         query = connection.execute("SELECT * FROM COMPLEX_REFERENCE_MAPPING")
-
-    #         if query:
-    #             for row in query:
-    #                 self.reference_mapping[row[0]] = {"pdb_complex_id": row[2],
-    #                                             "accession": row[1]}
-
-    #             return self.reference_mapping
-
-    # def export_data(self):
-    #     data = [(k, v['accession'], v['pdb_complex_id']) for k,
-    #              v in self.reference_mapping.items()]
-    #     conn = create_db_connection(self.db_conn_str)
-
-    #     with conn as connection:
-    #         empty_table_command = "TRUNCATE TABLE COMPLEX_REFERENCE_MAPPING"
-    #         insert_data_command = "INSERT INTO COMPLEX_REFERENCE_MAPPING VALUES (:1, :2, :3)"
-    #         connection.execute(empty_table_command)
-    #         for row in data:
-    #             connection.execute(insert_data_command, row)
 
     def export_csv(self):
         """
@@ -117,12 +87,8 @@ class Neo4JProcessComplex:
             "accession",
             "entries",
         ]
-        # base_path = Path.cwd()
         base_path = self.csv_path
         filename = "complexes_mapping.csv"
-        # csv_filename = (
-        #     base_path.joinpath(filename)
-        # )  # noqa: F841
         complete_path = os.path.join(base_path, filename)
         with open(complete_path, "w", newline="") as reference_file:
             file_csv = csv.writer(reference_file)
@@ -162,8 +128,6 @@ class Neo4JProcessComplex:
         """
         print("Querying Complex Portal data")
         mappings = self.run_query(query=qy.COMPLEX_PORTAL_DATA_QUERY)
-        # rdict = [rec.data() for rec in mappings]
-        # print(rdict)
         for row in mappings:
             accessions = row.get("uniq_accessions")
             complex_id = row.get("complex_id")
@@ -214,16 +178,9 @@ class Neo4JProcessComplex:
         Aggregate unique complex compositions from PDB data, compares them to
         Complex Portal data and processes them for use later.
         """
-        # Had to include this to run in local machine. We don\t need this now
-        # cx_Oracle.init_oracle_client(lib_dir="/Users/sria/Downloads/instantclient_19_8")
-
-        # Update self.reference_mapping if reference is available
-        # self.reference_mapping = self.check_reference_data()
         print("Querying PDB Assembly data")
         mappings = self.run_query(qy.PDB_ASSEMBLY_DATA_QUERY)
         for row in mappings:
-            # count += 1
-            # (uniq_accessions, assemblies) = row
 
             uniq_accessions = row.get("accessions")
             assemblies = row.get("assemblies")
@@ -312,10 +269,6 @@ class Neo4JProcessComplex:
                         "entry_id": str(entry),
                     }
                 )
-
-                # uniq_id += 1
-            # print(f"Number of records: {count}")
-
         # create list of common Complex and PDB_Complex nodes
         for common_complex in self.common_complexes:
             (pdb_complex_id, complex_portal_id) = common_complex
@@ -328,45 +281,6 @@ class Neo4JProcessComplex:
 
         print("Done querying PDB Assembly data")
         print(len(self.reference_mapping))
-
-        # for accessions in self.dict_complex_portal_id.keys():
-        #     accession_hash = hashlib.md5(accessions.encode("utf-8")).hexdigest()
-        #     complex_portal_id = self.dict_complex_portal_id[accessions]
-        #     entries = self.dict_complex_portal_entries.get(complex_portal_id)
-        #     pdb_complex_id = self.use_persistent_identifier(
-        #         accession_hash, accessions, complex_portal_id, entries
-        #     )
-
-        #     # keep data for each PDB complex in dict_pdb_complex to be used later
-        #     self.dict_pdb_complex[pdb_complex_id] = (accessions, entries)
-
-        #     for item in accessions.split(","):
-        #         [accession, stoichiometry, tax_id] = item.split("_")
-
-        #         # this is the data from complex portal, there won't be any PDB entity
-        #         # as a participant
-        #         accession_params_list.append(
-        #             {
-        #                 "complex_id": str(pdb_complex_id),
-        #                 "accession": str(accession),
-        #                 "stoichiometry": str(stoichiometry),
-        #             }
-        #         )
-
-    # def complex_portal_data_without_correspondence(self):
-    #     for accession, complex_portal_id in self.dict_complex_portal_id.items():
-    #         entries = self.dict_complex_portal_entries[complex_portal_id]
-    #         self.complexes_unique_to_complex_portal.append((complex_portal_id,
-    #                                                         accession,
-    #                                                         entries))
-    #     # print(self.complexes_unique_to_complex_portal)
-
-    # def export_csv_debugging(self):
-    #     with open('unique_complexes_from_complex_portal','w') as out:
-    #         csv_out=csv.writer(out)
-    #         csv_out.writerow(['complex_portal_id', 'accession', 'entries'])
-    #         for row in self.complexes_unique_to_complex_portal:
-    #             csv_out.writerow(row)
 
     def create_graph_relationships(self):
         """
