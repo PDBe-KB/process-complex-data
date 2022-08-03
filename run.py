@@ -7,7 +7,13 @@ import time
 
 
 def run_complexes(
-    bolt_url, username, password, csv_path, molecule_name_path, molecule_components_path, complex_portal_path
+    bolt_url,
+    username,
+    password,
+    csv_path,
+    molecule_name_path,
+    molecule_components_path,
+    complex_portal_path,
 ):
     """
     Run the processes to aggregate/process complex data and assign
@@ -27,7 +33,9 @@ def run_complexes(
     subprocess.run(shlex.split(second_process_cmd))
 
 
-def merge_csv_files(csv_path, filename1="complexes_mapping.csv", filename2="complexes_names.csv"):
+def merge_csv_files(
+    csv_path, filename1="complexes_mapping.csv", filename2="complexes_names.csv"
+):
     """
     Merge the csv files produced by the proccesses above into a single file
 
