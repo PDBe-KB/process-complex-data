@@ -1,5 +1,4 @@
 from unittest import TestCase
-from unittest.mock import patch
 import os
 
 from complexes.utils.get_annotated_name import GetAnnotatedName
@@ -20,7 +19,6 @@ stub_data = [
 
 
 class TestGetAnnotatedName(TestCase):
-    # TODO Convert all the other tests to this format
 
     def setUp(self) -> None:
         self.gan = GetAnnotatedName(
