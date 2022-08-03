@@ -67,22 +67,20 @@ class TestGetDerivedName(TestCase):
             "Respiratory chain complex IV",
             self.dn.get_name_from_go(["respiratory chain complex IV"]),
         )
-
-    def test_get_ribosome_rna_accessions(self):
-        # Test if method returns a list of ribosome RNA accessions
-        self.assertEqual(
-            expected_ribosome_accessions, self.dn.get_ribosome_rna_accessions()
-        )
+        # Test that the method doesn't break with incorrect GO name
+        self.assertIsNone(self.dn.get_name_from_go(["foo"]))
 
     def test_has_ribosomal_rna(self):
         # Test whether rRNA Rfam accession is present
         message = "Test value is not true."
         self.assertTrue(self.dn.has_ribosomal_rna(["RF00002"]), message)
+        self.assertFalse(self.dn.has_ribosomal_rna(["FOO"]), message)
 
     def test_has_trna(self):
         # Test whether tRNA Rfam accession is present
         message = "Test value is not true."
         self.assertTrue(self.dn.has_trna(["RF00005"]), message)
+        self.assertFalse(self.dn.has_trna(["FOO"]), message)
 
     def test_get_name_from_names_for_ribosome(self):
         """

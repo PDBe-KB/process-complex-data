@@ -129,7 +129,7 @@ class TestProcessComplex(TestCase):
         self.bolt_uri = "neo4j://"
         self.csv_path = "test_path"
 
-    @patch("complexes.process_complex.Neo4JProcessComplex.run_query")
+    @patch("complexes.process_complex.Neo4JProcessComplex._run_query")
     def test_get_complex_portal_data(self, rq):
         complex_obj = Neo4JProcessComplex(
             self.bolt_uri, self.username, self.password, self.csv_path
@@ -146,7 +146,7 @@ class TestProcessComplex(TestCase):
             complex_obj.dict_complex_portal_entries, mock_dict_complex_portal_entries
         )
 
-    @patch("complexes.process_complex.Neo4JProcessComplex.run_query")
+    @patch("complexes.process_complex.Neo4JProcessComplex._run_query")
     def test_process_pdb_assembly_data(self, rq):
         complex_obj = Neo4JProcessComplex(
             self.bolt_uri, self.username, self.password, self.csv_path
@@ -160,7 +160,7 @@ class TestProcessComplex(TestCase):
         #     complex_obj.dict_complex_portal_entries, mock_dict_complex_portal_entries
         # )
 
-    @patch("complexes.process_complex.Neo4JProcessComplex.run_query")
+    @patch("complexes.process_complex.Neo4JProcessComplex._run_query")
     def test_use_persistent_identifier(self, rq):
         # Test whether the method return the correct pdb_complex_id based on mock data
         complex_obj = Neo4JProcessComplex(
@@ -170,7 +170,7 @@ class TestProcessComplex(TestCase):
         complex_obj.process_assembly_data()
 
         # a new complex id is returned if the hash obj is not in the mock data
-        pdb_complex_id = complex_obj.use_persistent_identifier(
+        pdb_complex_id = complex_obj._use_persistent_identifier(
             # made-up hash obj
             "c0009f",
             None,
@@ -180,21 +180,7 @@ class TestProcessComplex(TestCase):
         self.assertEqual(pdb_complex_id, "PDB-CPX-100006")
 
         # an existing complex id is returned based on the mock data
-        pdb_complex_id = complex_obj.use_persistent_identifier(
+        pdb_complex_id = complex_obj._use_persistent_identifier(
             "a9f2c6e982b417463bc093e6b83c278b", None, None, None
         )
         self.assertEqual(pdb_complex_id, "PDB-CPX-100001")
-
-    # @patch("complexes.process_complex.Neo4JProcessComplex.run_query")
-    # def test_export_csv(self, rq):
-    #     complex_obj = Neo4JProcessComplex(self.bolt_uri,
-    #                                       self.username,
-    #                                       self.password,
-    #                                       self.csv_path)
-    #     rq.return_value = mock_pdb_assembly_data
-    #     complex_obj.process_assembly_data()
-    #     complex_obj.csv_path = "test2"
-    #     print(complex_obj.reference_mapping)
-    #     print(complex_obj.csv_path)
-    #     complex_obj.export_csv()
-    #     # print(complex_obj.export_csv.__getattribute__)
