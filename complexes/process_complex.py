@@ -28,7 +28,7 @@ class Neo4JProcessComplex:
         self.unmapped_polymer_params_list = []
         self.complexes_unique_to_complex_portal = []
 
-    def use_persistent_identifier(
+    def _use_persistent_identifier(
         self, hash_str, accession, complex_portal_id, entries
     ):
         """
@@ -45,6 +45,7 @@ class Neo4JProcessComplex:
         Returns:
             string: PDB Complex ID
         """
+        pdb_complex_id = ""
         basic_PDB_complex_str = "PDB-CPX-"
         initial_num = 100001
         if hash_str in self.reference_mapping:
@@ -97,14 +98,7 @@ class Neo4JProcessComplex:
                 file_csv.writerow([key] + [val.get(i, "") for i in headers])
         print("Complexes_mapping file has been produced")
 
-    def get_graph(self):
-        """
-        Create an instance of Neo4j with the given connection
-        parameters
-        """
-        self.graph = Graph(self.bolt_uri, user=self.username, password=self.password)
-
-    def run_query(self, query, param=None):
+    def _run_query(self, query, param=None):
         """
         Run Neo4j query
 
@@ -115,7 +109,9 @@ class Neo4JProcessComplex:
             object: Neo4j query result
         """
         if not self.graph:
-            self.get_graph()
+            self.graph = Graph(
+                self.bolt_uri, user=self.username, password=self.password
+            )
         if param is not None:
             return self.graph.run(query, parameters=param)
         else:
@@ -127,7 +123,7 @@ class Neo4JProcessComplex:
         complex composition str and entries
         """
         print("Querying Complex Portal data")
-        mappings = self.run_query(query=qy.COMPLEX_PORTAL_DATA_QUERY)
+        mappings = self._run_query(query=qy.COMPLEX_PORTAL_DATA_QUERY)
         for row in mappings:
             accessions = row.get("uniq_accessions")
             complex_id = row.get("complex_id")
@@ -135,7 +131,7 @@ class Neo4JProcessComplex:
             self.dict_complex_portal_id[accessions] = complex_id
             self.dict_complex_portal_entries[complex_id] = entries
 
-    def create_nodes_relationship(
+    def _create_nodes_relationship(
         self, query_name, n1_name, n2_name, param_name, param_val
     ):
         """
@@ -149,7 +145,7 @@ class Neo4JProcessComplex:
             param_val (string): parameter value
         """
         print(f"Creating relationship between {n1_name} and {n2_name} nodes - START")
-        self.run_query(
+        self._run_query(
             query_name,
             param={param_name: param_val},
         )
@@ -159,19 +155,13 @@ class Neo4JProcessComplex:
         """
         Create subcomplex relationships in the graph db
         """
-        return self.run_query(qy.CREATE_SUBCOMPLEX_RELATION_QUERY)
+        return self._run_query(qy.CREATE_SUBCOMPLEX_RELATION_QUERY)
 
     def drop_PDBComplex_nodes(self):
         """
         Drop any existing PDB complex nodes in the graph db
         """
-        return self.run_query(qy.DROP_PDB_COMPLEX_NODES_QUERY)
-
-    def drop_existing_subcomplex_relationships(self):
-        """
-        Drop any existing subcomplex relationships in the graph db
-        """
-        return self.run_query(qy.DROP_SUBCOMPLEX_RELATION_QUERY)
+        return self._run_query(qy.DROP_PDB_COMPLEX_NODES_QUERY)
 
     def process_assembly_data(self):
         """
@@ -179,7 +169,7 @@ class Neo4JProcessComplex:
         Complex Portal data and processes them for use later.
         """
         print("Querying PDB Assembly data")
-        mappings = self.run_query(qy.PDB_ASSEMBLY_DATA_QUERY)
+        mappings = self._run_query(qy.PDB_ASSEMBLY_DATA_QUERY)
         for row in mappings:
 
             uniq_accessions = row.get("accessions")
@@ -195,7 +185,7 @@ class Neo4JProcessComplex:
             complex_portal_id = self.dict_complex_portal_id.get(tmp_uniq_accessions)
 
             # print(f"Printing Complex Portal ID: {complex_portal_id}")
-            pdb_complex_id = self.use_persistent_identifier(
+            pdb_complex_id = self._use_persistent_identifier(
                 accession_hash, tmp_uniq_accessions, complex_portal_id, assemblies
             )
 
@@ -260,7 +250,6 @@ class Neo4JProcessComplex:
                         )
 
             for uniq_assembly in assemblies.split(","):
-                # [entry, assembly_id] = uniq_assembly.split("_")
                 [entry, _] = uniq_assembly.split("_")
                 self.assembly_params_list.append(
                     {
@@ -290,7 +279,7 @@ class Neo4JProcessComplex:
         """
         print("Start creating relationships betweeen nodes")
         # Create relationship between Uniprot and PDBComplex nodes
-        self.create_nodes_relationship(
+        self._create_nodes_relationship(
             query_name=qy.MERGE_ACCESSION_QUERY,
             n1_name="Uniprot",
             n2_name="PDBComplex",
@@ -298,7 +287,7 @@ class Neo4JProcessComplex:
             param_val=self.accession_params_list,
         )
         # Create relationship between Entity and PDBComplex nodes
-        self.create_nodes_relationship(
+        self._create_nodes_relationship(
             query_name=qy.MERGE_ENTITY_QUERY,
             n1_name="Entity",
             n2_name="PDBComplex",
@@ -306,7 +295,7 @@ class Neo4JProcessComplex:
             param_val=self.entity_params_list,
         )
         # Create relationship between UnmappedPolymer and PDBComplex nodes
-        self.create_nodes_relationship(
+        self._create_nodes_relationship(
             query_name=qy.MERGE_UNMAPPED_POLYMER_QUERY,
             n1_name="UnmappedPolymer",
             n2_name="PDBComplex",
@@ -314,7 +303,7 @@ class Neo4JProcessComplex:
             param_val=self.unmapped_polymer_params_list,
         )
         # Create relationship between Rfam and PDBComplex nodes
-        self.create_nodes_relationship(
+        self._create_nodes_relationship(
             query_name=qy.MERGE_RFAM_QUERY,
             n1_name="Rfam",
             n2_name="PDBComplex",
@@ -322,7 +311,7 @@ class Neo4JProcessComplex:
             param_val=self.rfam_params_list,
         )
         # Create relationship between Assembly and PDBComplex nodes
-        self.create_nodes_relationship(
+        self._create_nodes_relationship(
             query_name=qy.MERGE_ASSEMBLY_QUERY,
             n1_name="Assembly",
             n2_name="PDBComplex",
@@ -330,7 +319,7 @@ class Neo4JProcessComplex:
             param_val=self.assembly_params_list,
         )
         # Create relationship between PDBComplex and Complex nodes
-        self.create_nodes_relationship(
+        self._create_nodes_relationship(
             query_name=qy.COMMON_COMPLEX_QUERY,
             n1_name="PDBComplex",
             n2_name="Complex",
@@ -384,7 +373,6 @@ def main():
     complex.drop_PDBComplex_nodes()
     complex.process_assembly_data()
     complex.create_graph_relationships()
-    # complex.drop_existing_subcomplex_relationships()
     complex.create_subcomplex_relationships()
     complex.export_csv()
 
