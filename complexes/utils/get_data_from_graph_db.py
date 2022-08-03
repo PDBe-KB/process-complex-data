@@ -65,8 +65,7 @@ class GetComplexData:
         """
         if not self.graph:
             self.graph = Graph(
-                self.bolt_host, user=self.neo4j_username,
-                password=self.neo4j_password
+                self.bolt_host, user=self.neo4j_username, password=self.neo4j_password
             )
         return self.graph.run(query)
 
@@ -114,7 +113,6 @@ class GetComplexData:
                     if entry_assembly:
                         entry_info = entry_assembly.split("_")
                         pdbid = entry_info[0]
-                        # assembly_id = entry_info[1]
 
                         self.pdb_complexes.setdefault(pdb_complex_id, {}).setdefault(
                             "pdb_entries", []
@@ -161,22 +159,10 @@ class GetComplexData:
                     if entity_length > 19:
                         molecule_name = self.molecule_names.get(entity)
                     elif entity_length > 9:
-                        # if tax_id in (None, ""):
-                        #     molecule_name = "peptide (unknown source)"
-                        # elif tax_id == "32630":
-                        #     molecule_name = "synthetic peptide"
-                        # else:
-                        #     molecule_name = "peptide"
                         molecule_name = PEPTIDE_NAMES.get("medium_peptide").get(
                             tax_id, "peptide"
                         )
                     else:
-                        # if tax_id in (None, ""):
-                        #     molecule_name = "short peptide (unknown source)"
-                        # elif tax_id == "32630":
-                        #     molecule_name = "synthetic short peptide"
-                        # else:
-                        #     molecule_name = "short peptide"
                         molecule_name = PEPTIDE_NAMES.get("short_peptide").get(
                             tax_id, "short peptide"
                         )

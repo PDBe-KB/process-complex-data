@@ -7,6 +7,7 @@ class GetComplexPortalData:
     """
     This class deals with getting data from the Complex Portal
     """
+
     def __init__(self, complex_portal_path):
         self.complex_portal_ftp_root = "ftp://ftp.ebi.ac.uk/" + complex_portal_path
         self.complex_portal_https_root = "https://ftp.ebi.ac.uk/" + complex_portal_path
@@ -30,8 +31,7 @@ class GetComplexPortalData:
         for folder in self.folders_to_check:
             self.complex_portal_components.extend(
                 self._get_data(
-                    sub_folder=folder,
-                    file_name=self.complex_portal_components_tsv
+                    sub_folder=folder, file_name=self.complex_portal_components_tsv
                 )
             )
             self.complex_portal_summary.extend(
@@ -55,13 +55,12 @@ class GetComplexPortalData:
             stoichiometry = row.get("stoichiometry")
             if database_name == "uniprotkb":
                 if database_accession in complex_portal_component_dict.get(
-                        complex_id, {}
+                    complex_id, {}
                 ):
                     current_stoichiometry = complex_portal_component_dict.get(
                         complex_id, {}
                     )[database_accession]
-                    stoichiometry = int(stoichiometry) + int(
-                        current_stoichiometry)
+                    stoichiometry = int(stoichiometry) + int(current_stoichiometry)
                     complex_portal_component_dict.setdefault(complex_id, {})[
                         database_accession
                     ] = int(stoichiometry)
@@ -82,8 +81,7 @@ class GetComplexPortalData:
                 accession_with_stoichiometry = "{}_{}".format(
                     database_accession, stoichiometry
                 )
-                self.complex_portal_component_dict.setdefault(complex_id,
-                                                              []).append(
+                self.complex_portal_component_dict.setdefault(complex_id, []).append(
                     accession_with_stoichiometry
                 )
 
@@ -92,12 +90,10 @@ class GetComplexPortalData:
                 sorted(list(self.complex_portal_component_dict[complex_id]))
             )
             self.complex_portal_component_string[complex_id] = component_string
-            self.complex_portal_per_component_string[
-                component_string] = complex_id
+            self.complex_portal_per_component_string[component_string] = complex_id
             self.complex_portal_per_component_string_no_stoch[
                 ",".join(
-                    sorted(list(
-                        complex_portal_component_dict_no_stoch.get(complex_id)))
+                    sorted(list(complex_portal_component_dict_no_stoch.get(complex_id)))
                 )
             ] = complex_id
 
@@ -121,8 +117,7 @@ class GetComplexPortalData:
         Returns:
 
         """
-        for root_url in [self.complex_portal_ftp_root,
-                         self.complex_portal_https_root]:
+        for root_url in [self.complex_portal_ftp_root, self.complex_portal_https_root]:
             try:
                 ftp_file = urljoin(root_url, sub_folder, file_name)
                 df = pd.read_csv(ftp_file, sep="\t")
