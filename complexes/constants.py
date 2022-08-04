@@ -4,3 +4,9 @@ complex_mapping_headers = [
     "accession",
     "entries",
 ]
+
+complex_name_headers = [
+    "complex_name",
+    "derived_complex_name",
+    "complex_name_type",
+]
