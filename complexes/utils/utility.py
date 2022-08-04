@@ -12,7 +12,7 @@ def export_csv(data, key_name, headers, csv_path, filename):
         key_name (string): primary column name for aggregating the data
         headers (list): list of column names
         csv_path (str): output CSV path
-        filename (str): the name of the file
+        filename (str): the name of the output file
     """
     base_path = csv_path
     complete_path = os.path.join(base_path, filename)
