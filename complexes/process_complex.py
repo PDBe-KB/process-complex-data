@@ -28,6 +28,14 @@ class Neo4JProcessComplex:
         self.unmapped_polymer_params_list = []
         self.complexes_unique_to_complex_portal = []
 
+    def run_process(self):
+        # self.get_complex_portal_data()
+        # self.drop_PDBComplex_nodes()
+        self.process_assembly_data()
+        # self.create_graph_relationships()
+        # self.create_subcomplex_relationships()
+        self.export_csv()
+
     def _use_persistent_identifier(
         self, hash_str, accession, complex_portal_id, entries
     ):
@@ -369,12 +377,7 @@ def main():
         csv_path=args.csv_path,
     )
 
-    complex.get_complex_portal_data()
-    complex.drop_PDBComplex_nodes()
-    complex.process_assembly_data()
-    complex.create_graph_relationships()
-    complex.create_subcomplex_relationships()
-    complex.export_csv()
+    complex.run_process()
 
 
 if __name__ == "__main__":
