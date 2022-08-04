@@ -39,7 +39,6 @@ class GetAnnotatedName:
         with open(molecule_name_file) as in_file:
             data = csv.DictReader(in_file)
             for row in data:
-                print(row)
                 complex_id = row.get("complex_number")
                 name = row.get("PDB101-name")
 
