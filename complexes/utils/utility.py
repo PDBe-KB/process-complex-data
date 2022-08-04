@@ -1,4 +1,5 @@
 import csv
+import pandas as pd
 from py2neo import Graph
 import os
 
@@ -40,3 +41,23 @@ def run_query(neo4j_info, query, param=None):
         return graph.run(query, parameters=param)
     else:
         return graph.run(query)
+
+
+def merge_csv_files(
+    csv_path, filename1="complexes_mapping.csv", filename2="complexes_name.csv"
+):
+    """
+    Merge the csv files produced by the proccesses above into a single file
+
+    Args:
+        filename1 (str, optional): CSV file produced by the first process. Defaults to
+                                   "complexes_mapping.csv".
+        filename2 (str, optional): CSV file produced by the second process. Defaults to
+                                   "complexes_names.csv".
+    """
+    output_filename = "complexes_master.csv"
+    df1 = pd.read_csv(os.path.join(csv_path, filename1))
+    df2 = pd.read_csv(os.path.join(csv_path, filename2))
+    merged_df = df1.merge(df2, on="pdb_complex_id")
+    merged_df.to_csv(os.path.join(csv_path, output_filename), index=False)
+    print(f"File {output_filename} has been produced")
