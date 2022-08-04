@@ -1,9 +1,9 @@
 import argparse
 from collections import OrderedDict
 from complexes import queries as qy
-import csv
+from complexes.utils import utility as ut
+from complexes.constants import complex_mapping_headers as csv_headers
 import hashlib
-import os
 from py2neo import Graph
 import time
 
@@ -34,7 +34,13 @@ class Neo4JProcessComplex:
         self.process_assembly_data()
         # self.create_graph_relationships()
         # self.create_subcomplex_relationships()
-        self.export_csv()
+        ut.export_csv(
+            self.reference_mapping,
+            "md5_obj",
+            csv_headers,
+            self.csv_path,
+            "complexes_mapping.csv",
+        )
 
     def _use_persistent_identifier(
         self, hash_str, accession, complex_portal_id, entries
@@ -84,27 +90,27 @@ class Neo4JProcessComplex:
             }
         return pdb_complex_id
 
-    def export_csv(self):
-        """
-        Generate a csv file that contains complexes related information such as
-        complex_composition, pdb_complex_id, complex_portal_id, assemblies and
-        md5_obj representing the complex_composition
-        """
-        headers = [  # noqa: F841
-            "pdb_complex_id",
-            "complex_portal_id",
-            "accession",
-            "entries",
-        ]
-        base_path = self.csv_path
-        filename = "complexes_mapping.csv"
-        complete_path = os.path.join(base_path, filename)
-        with open(complete_path, "w", newline="") as reference_file:
-            file_csv = csv.writer(reference_file)
-            file_csv.writerow(["md5_obj", *headers])
-            for key, val in self.reference_mapping.items():
-                file_csv.writerow([key] + [val.get(i, "") for i in headers])
-        print("Complexes_mapping file has been produced")
+    # def export_csv(self):
+    #     """
+    #     Generate a csv file that contains complexes related information such as
+    #     complex_composition, pdb_complex_id, complex_portal_id, assemblies and
+    #     md5_obj representing the complex_composition
+    #     """
+    #     headers = [  # noqa: F841
+    #         "pdb_complex_id",
+    #         "complex_portal_id",
+    #         "accession",
+    #         "entries",
+    #     ]
+    #     base_path = self.csv_path
+    #     filename = "complexes_mapping.csv"
+    #     complete_path = os.path.join(base_path, filename)
+    #     with open(complete_path, "w", newline="") as reference_file:
+    #         file_csv = csv.writer(reference_file)
+    #         file_csv.writerow(["md5_obj", *headers])
+    #         for key, val in self.reference_mapping.items():
+    #             file_csv.writerow([key] + [val.get(i, "") for i in headers])
+    #     print("Complexes_mapping file has been produced")
 
     def _run_query(self, query, param=None):
         """
