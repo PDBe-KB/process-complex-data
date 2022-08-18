@@ -121,7 +121,6 @@ mock_pdb_complexes_data_one = {
         ],
     },
 }
-
 mock_pdb_complexes_data_two = {
     "PDB-CPX-7330": {
         "pdb_complex_id": "PDB-CPX-7330",
@@ -149,12 +148,10 @@ mock_pdb_complexes_data_two = {
         ],
     }
 }
-
 mock_complex_portal_per_component_string_two = {"A8K8P3_1,P41208_1": "CPX-724"}
 mock_complex_portal_component_string_no_stoch_two = {"P27540,Q16665": "CPX-7381"}
 mock_complex_portal_names_two = {"CPX-724": "Centrin-2-SFI1 complex"}
 mock_complex_portal_component_dict_two = {"CPX-724": ["P41208_1", "A8K8P3_1"]}
-
 mock_pdb_complexes_data_three = {
     "PDB-CPX-60": {
         "pdb_complex_id": "PDB-CPX-60",
@@ -191,7 +188,6 @@ mock_pdb_complexes_data_three = {
         ],
     }
 }
-
 mock_pdb_complexes_data_four = {
     "PDB-CPX-79007": {
         "pdb_complex_id": "PDB-CPX-79007",
@@ -223,7 +219,6 @@ mock_pdb_complexes_data_four = {
         ],
     }
 }
-
 mock_pdb_complexes_data_five = {
     "PDB-CPX-50289": {
         "pdb_complex_id": "PDB-CPX-50289",
@@ -313,7 +308,6 @@ mock_pdb_complexes_data_five = {
         ],
     }
 }
-
 mock_complex_portal_per_component_string_five = {"A8K8P3_1,P41208_1": "CPX-44"}
 mock_complex_portal_component_string_no_stoch_five = {}
 mock_complex_portal_names_five = {"CPX-44": "LSM2-8 complex"}
@@ -328,7 +322,6 @@ mock_complex_portal_component_dict_five = {
         "P57743_1",
     ]
 }
-
 mock_pdb_complexes_data_six = {
     "PDB-CPX-317": {
         "pdb_complex_id": "PDB-CPX-317",
@@ -356,7 +349,6 @@ mock_pdb_complexes_data_six = {
         ],
     }
 }
-
 mock_pdb_complexes_data_seven = {
     "PDB-CPX-551": {
         "pdb_complex_id": "PDB-CPX-551",
@@ -610,7 +602,6 @@ mock_pdb_complexes_data_seven = {
         ],
     }
 }
-
 mock_pdb_complexes_data_eight = {
     "PDB-CPX-13341": {
         "pdb_complex_id": "PDB-CPX-13341",
@@ -644,7 +635,6 @@ mock_pdb_complexes_data_eight = {
         ],
     }
 }
-
 mock_pdb_complexes_data_nine = {
     "PDB-CPX-709": {
         "pdb_complex_id": "PDB-CPX-709",
@@ -699,8 +689,8 @@ class TestComplexName(TestCase):
             self.username,
             self.password,
             self.csv_path,
-            os.path.join("tests", "data", "complexes_molecules.csv"),
-            os.path.join("tests", "data", "complexes_components.csv"),
+            os.path.join("complexes", "tests", "data", "complexes_molecules.csv"),
+            os.path.join("complexes", "tests", "data", "complexes_components.csv"),
             self.complex_portal_path,
         )
         complex_obj.complex_data = mock_pdb_complexes_data_one
@@ -717,8 +707,8 @@ class TestComplexName(TestCase):
             self.username,
             self.password,
             self.csv_path,
-            os.path.join("tests", "data", "complexes_molecules.csv"),
-            os.path.join("tests", "data", "complexes_components.csv"),
+            os.path.join("complexes", "tests", "data", "complexes_molecules.csv"),
+            os.path.join("complexes", "tests", "data", "complexes_components.csv"),
             self.complex_portal_path,
         )
         complex_obj.complex_portal_entries = (
@@ -748,8 +738,8 @@ class TestComplexName(TestCase):
             self.username,
             self.password,
             self.csv_path,
-            os.path.join("tests", "data", "complexes_molecules.csv"),
-            os.path.join("tests", "data", "complexes_components.csv"),
+            os.path.join("complexes", "tests", "data", "complexes_molecules.csv"),
+            os.path.join("complexes", "tests", "data", "complexes_components.csv"),
             self.complex_portal_path,
         )
         complex_obj.complex_data = mock_pdb_complexes_data_three
@@ -770,8 +760,8 @@ class TestComplexName(TestCase):
             self.username,
             self.password,
             self.csv_path,
-            os.path.join("tests", "data", "complexes_molecules.csv"),
-            os.path.join("tests", "data", "complexes_components.csv"),
+            os.path.join("complexes", "tests", "data", "complexes_molecules.csv"),
+            os.path.join("complexes", "tests", "data", "complexes_components.csv"),
             self.complex_portal_path,
         )
         complex_obj.complex_data = mock_pdb_complexes_data_four
@@ -788,8 +778,8 @@ class TestComplexName(TestCase):
             self.username,
             self.password,
             self.csv_path,
-            os.path.join("tests", "data", "complexes_molecules.csv"),
-            os.path.join("tests", "data", "complexes_components.csv"),
+            os.path.join("complexes", "tests", "data", "complexes_molecules.csv"),
+            os.path.join("complexes", "tests", "data", "complexes_components.csv"),
             self.complex_portal_path,
         )
         complex_obj.complex_portal_entries = (
@@ -818,8 +808,8 @@ class TestComplexName(TestCase):
             self.username,
             self.password,
             self.csv_path,
-            os.path.join("tests", "data", "complexes_molecules.csv"),
-            os.path.join("tests", "data", "complexes_components.csv"),
+            os.path.join("complexes", "tests", "data", "complexes_molecules.csv"),
+            os.path.join("complexes", "tests", "data", "complexes_components.csv"),
             self.complex_portal_path,
         )
         complex_obj.complex_data = mock_pdb_complexes_data_six
@@ -840,8 +830,8 @@ class TestComplexName(TestCase):
             self.username,
             self.password,
             self.csv_path,
-            os.path.join("tests", "data", "complexes_molecules.csv"),
-            os.path.join("tests", "data", "complexes_components.csv"),
+            os.path.join("complexes", "tests", "data", "complexes_molecules.csv"),
+            os.path.join("complexes", "tests", "data", "complexes_components.csv"),
             self.complex_portal_path,
         )
         complex_obj.complex_data = mock_pdb_complexes_data_seven
@@ -876,8 +866,8 @@ class TestComplexName(TestCase):
             self.username,
             self.password,
             self.csv_path,
-            os.path.join("tests", "data", "complexes_molecules.csv"),
-            os.path.join("tests", "data", "complexes_components.csv"),
+            os.path.join("complexes", "tests", "data", "complexes_molecules.csv"),
+            os.path.join("complexes", "tests", "data", "complexes_components.csv"),
             self.complex_portal_path,
         )
         complex_obj.complex_data = mock_pdb_complexes_data_nine

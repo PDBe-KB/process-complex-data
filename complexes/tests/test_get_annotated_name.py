@@ -19,20 +19,20 @@ stub_data = [
 
 
 class TestGetAnnotatedName(TestCase):
-
     def setUp(self) -> None:
         self.gan = GetAnnotatedName(
-            os.path.join('tests', 'data', 'complexes_molecules.csv'),
-            os.path.join('tests', 'data', 'complexes_components.csv'))
+            os.path.join("complexes", "tests", "data", "complexes_molecules.csv"),
+            os.path.join("complexes", "tests", "data", "complexes_components.csv"),
+        )
 
     def test_get_data(self):
         self.gan.get_data()
 
         # Test if method returns the correct name
-        self.assertEqual("AAA+ proteases",
-                         self.gan.molecule_names["1"])
-        self.assertEqual("ABO Blood Type Glycosyltransferases",
-                         self.gan.molecule_names["2"])
+        self.assertEqual("AAA+ proteases", self.gan.molecule_names["1"])
+        self.assertEqual(
+            "ABO Blood Type Glycosyltransferases", self.gan.molecule_names["2"]
+        )
 
         # Test if method returns the correct components name
         expected_result = [
@@ -48,5 +48,3 @@ class TestGetAnnotatedName(TestCase):
             },
         ]
         self.assertEqual(expected_result, self.gan.molecule_components["1"])
-
-
