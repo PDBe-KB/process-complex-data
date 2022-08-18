@@ -50,7 +50,9 @@ class TestUtility(TestCaseBase):
     def test_merge_csv_files(self):
         "Test if the merge_csv_files method creates a file"
         base_path = Path.cwd()
-        mock_files_path = base_path.joinpath("tests").joinpath("data")
+        mock_files_path = (
+            base_path.joinpath("complexes").joinpath("tests").joinpath("data")
+        )
         filename1 = "mock_complexes_mapping.csv"
         filename2 = "mock_complexes_name.csv"
         merge_csv_files(mock_files_path, filename1, filename2)
@@ -64,7 +66,9 @@ class TestUtility(TestCaseBase):
     def test_export_csv(self):
         "Test if the export_csv method creates a file"
         base_path = Path.cwd()
-        output_file_path = base_path.joinpath("tests").joinpath("data")
+        output_file_path = (
+            base_path.joinpath("complexes").joinpath("tests").joinpath("data")
+        )
         filename = "mock_complexes_mapping_example.csv"
         export_csv(mock_data, "md5_obj", csv_headers, output_file_path, filename)
         path = Path(output_file_path.joinpath(filename))

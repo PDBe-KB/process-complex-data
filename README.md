@@ -1,3 +1,4 @@
+[![CodeFactor](https://www.codefactor.io/repository/github/pdbe-kb/process-complex-data/badge)](https://www.codefactor.io/repository/github/pdbe-kb/process-complex-data)
 [![Maintainability](https://api.codeclimate.com/v1/badges/aee4f254bddad263bf12/maintainability)](https://codeclimate.com/github/PDBe-KB/process-complex-data/maintainability)
 ![GitHub](https://img.shields.io/github/license/pdbe-kb/process-complex-data)
 
