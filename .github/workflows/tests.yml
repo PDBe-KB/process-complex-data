@@ -1,0 +1,39 @@
+# This workflow will install Python dependencies, run pytests
+
+name: complexes tests
+
+on:
+  push:
+    branches:
+      - master
+      - dev
+  pull_request:
+    branches:
+      - master
+      - dev
+
+jobs:
+  pytest:
+    name: Run unit tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+
+      - name: Set up python
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+
+      - name: Set up environment and run pytest
+        uses: s-weigand/setup-conda@v1
+        with:
+          activate-conda: true
+          conda-channels: conda-forge
+      - run: |
+          pip install -e ".[tests]"
+          pip install pre-commit
+          pre-commit install && pre-commit run --all
+      - run: pytest --cov=complexes
