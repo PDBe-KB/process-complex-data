@@ -1,5 +1,5 @@
 from complexes import queries as qy
-from py2neo import Graph
+from complexes.utils import utility as ut
 
 PEPTIDE_NAMES = {
     "medium_peptide": {"32630": "synthetic peptide", None: "peptide (unknown source"},
@@ -15,9 +15,7 @@ class GetComplexData:
         self.graph = None
         self.molecule_names = {}
         self.pdb_complexes = {}
-        self.bolt_host = bolt_uri
-        self.neo4j_username = username
-        self.neo4j_password = password
+        self.neo4j_info = (bolt_uri, username, password)
 
     def _populate_molecule_names_from_entity(self):
         """
@@ -25,7 +23,7 @@ class GetComplexData:
         entity node into a dictionary
         """
         query = qy.ENTITY_QUERY
-        mappings = self._run_query(query=query)
+        mappings = ut.run_query(self.neo4j_info, query)
 
         for row in mappings:
             entity_uniqid = row.get("entity_uniqid")
@@ -46,28 +44,12 @@ class GetComplexData:
         else:
             query = qy.RFAM_QUERY
 
-        mappings = self._run_query(query=query)
+        mappings = ut.run_query(self.neo4j_info, query)
 
         for row in mappings:
             accession = row.get("accession")
             name = row.get("description")
             self.molecule_names[accession] = name
-
-    def _run_query(self, query):
-        """
-        Runs Neo4J database query and returns its result
-
-        Args:
-            query (str): Neo4j query
-
-        Returns:
-            obj: result of Neo4j query
-        """
-        if not self.graph:
-            self.graph = Graph(
-                self.bolt_host, user=self.neo4j_username, password=self.neo4j_password
-            )
-        return self.graph.run(query)
 
     def get_pdb_complex_data(self):
         """
@@ -83,8 +65,8 @@ class GetComplexData:
         self._populate_molecule_names_from_uniprot_or_rfam("rfam")
         self._populate_molecule_names_from_entity()
 
-        print("Get PDB Complex Data - START")
-        mappings = self._run_query(qy.PDB_COMPLEX_QUERY)
+        print("Start getting PDB Complex Data")
+        mappings = ut.run_query(self.neo4j_info, qy.PDB_COMPLEX_QUERY)
         for row in mappings:
 
             pdb_complex_id = row.get("complex_id")
@@ -180,12 +162,11 @@ class GetComplexData:
 
                 else:
                     print("unhandled db type")
-                    print(db)
                     continue
 
                 self.pdb_complexes.setdefault(pdb_complex_id, {}).setdefault(
                     "components", []
                 ).append(component)
 
-        print("Get PDB Complex Data - END")
+        print("Done getting PDB Complex Data")
         return self.pdb_complexes

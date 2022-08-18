@@ -1,12 +1,12 @@
 import argparse
 from collections import Counter, OrderedDict
-import csv
 import logging
 from complexes.utils.get_data_from_graph_db import GetComplexData
 from complexes.utils.get_annotated_name import GetAnnotatedName
 from complexes.utils.get_derived_name import DeriveName
 from complexes.utils.get_data_from_complex_portal_ftp import GetComplexPortalData
-import os
+from complexes.utils import utility as ut
+from complexes.constants import complex_name_headers as csv_headers
 import time
 
 name_exclude_list = ["subunit", "component", "chain"]
@@ -98,30 +98,19 @@ class ProcessComplexName:
         self._get_complex_portal_entries()
         self._get_pdb_complex_entries()
         self._process_complex_name()
-        self._export_csv()
-
-    def _export_csv(self):
-        headers = [
-            # "complex_portal_id",
-            "complex_name",
-            "derived_complex_name",
-            "complex_name_type",
-        ]
-        base_path = self.csv_path
-        filename = "complexes_names.csv"
-        complete_path = os.path.join(base_path, filename)
-        with open(complete_path, "w", newline="") as complex_names:
-            file_csv = csv.writer(complex_names)
-            file_csv.writerow(["pdb_complex_id", *headers])
-            for key, val in self.complex_data_dict.items():
-                file_csv.writerow([key] + [val.get(i, "") for i in headers])
-        print("Complexes_names file has been produced")
+        ut.export_csv(
+            self.complex_data_dict,
+            "pdb_complex_id",
+            csv_headers,
+            self.csv_path,
+            "complexes_name.csv",
+        )
 
     def _get_complex_portal_entries(self):
         """
         Get complexes related data from Complex Portal
         """
-        print("starting getting complex portal entries")
+        print("Start getting complex portal entries")
         cd = GetComplexPortalData(self.complex_portal_path)
         cd.run_process()
         self.complex_portal_entries = cd.complex_portal_per_component_string
@@ -130,7 +119,7 @@ class ProcessComplexName:
         )
         self.complex_portal_names = cd.complex_portal_names
         self.complex_portal_dict = cd.complex_portal_component_dict
-        print("finished getting complex portal entries")
+        print("Done getting complex portal entries")
 
     def _get_pdb_complex_entries(self):
         """
@@ -140,10 +129,8 @@ class ProcessComplexName:
             dict: Contains data relevant for complexes with the key
             being the PDB Complex ID
         """
-        print("starting getting pdb complex entries")
         cd = GetComplexData(self.bolt_host, self.username, self.password)
-        self.complex_data = cd.pdb_complexes
-        print("finished getting pdb complex entries")
+        self.complex_data = cd.get_pdb_complex_data()
         return self.complex_data
 
     def check_annotated_name(self):
@@ -286,7 +273,6 @@ class ProcessComplexName:
         """
         complex_name = self._get_complex_portal_name()
         if complex_name:
-            print(complex_name)
             logging.debug(complex_name)
             self.complex_name_type = "complex portal"
         elif len(self.unp_names) == 1 and self.all_protein_unp:
@@ -591,7 +577,6 @@ class ProcessComplexName:
             # # check annotated names
             if not complex_name and self.unp_only_components:
                 potential_name = self.check_annotated_name()
-                print(potential_name)
                 if potential_name:
                     complex_name = potential_name
                     self.complex_name_type = "PDBe curated"
@@ -679,7 +664,6 @@ class ProcessComplexName:
             """
 
             self.complex_data_dict[complex_id] = {
-                # "complex_portal_id": self.complex_portal_id,
                 "complex_name": complex_name,
                 "derived_complex_name": derived_complex_name,
                 "complex_name_type": self.complex_name_type,

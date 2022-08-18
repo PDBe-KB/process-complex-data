@@ -1,19 +1,15 @@
 import argparse
 from collections import OrderedDict
 from complexes import queries as qy
-import csv
+from complexes.utils import utility as ut
+from complexes.constants import complex_mapping_headers as csv_headers
 import hashlib
-import os
-from py2neo import Graph
 import time
 
 
 class Neo4JProcessComplex:
     def __init__(self, bolt_uri, username, password, csv_path):
-        self.graph = None
-        self.bolt_uri = bolt_uri
-        self.username = username
-        self.password = password
+        self.neo4j_info = (bolt_uri, username, password)
         self.csv_path = csv_path
         self.dict_complex_portal_id = {}
         self.dict_complex_portal_entries = {}
@@ -27,6 +23,20 @@ class Neo4JProcessComplex:
         self.complex_params_list = []
         self.unmapped_polymer_params_list = []
         self.complexes_unique_to_complex_portal = []
+
+    def run_process(self):
+        self.get_complex_portal_data()
+        self.drop_PDBComplex_nodes()
+        self.process_assembly_data()
+        self.create_graph_relationships()
+        self.create_subcomplex_relationships()
+        ut.export_csv(
+            self.reference_mapping,
+            "md5_obj",
+            csv_headers,
+            self.csv_path,
+            "complexes_mapping.csv",
+        )
 
     def _use_persistent_identifier(
         self, hash_str, accession, complex_portal_id, entries
@@ -76,54 +86,13 @@ class Neo4JProcessComplex:
             }
         return pdb_complex_id
 
-    def export_csv(self):
-        """
-        Generate a csv file that contains complexes related information such as
-        complex_composition, pdb_complex_id, complex_portal_id, assemblies and
-        md5_obj representing the complex_composition
-        """
-        headers = [  # noqa: F841
-            "pdb_complex_id",
-            "complex_portal_id",
-            "accession",
-            "entries",
-        ]
-        base_path = self.csv_path
-        filename = "complexes_mapping.csv"
-        complete_path = os.path.join(base_path, filename)
-        with open(complete_path, "w", newline="") as reference_file:
-            file_csv = csv.writer(reference_file)
-            file_csv.writerow(["md5_obj", *headers])
-            for key, val in self.reference_mapping.items():
-                file_csv.writerow([key] + [val.get(i, "") for i in headers])
-        print("Complexes_mapping file has been produced")
-
-    def _run_query(self, query, param=None):
-        """
-        Run Neo4j query
-
-        Args:
-            query (string): Neo4j query
-
-        Returns:
-            object: Neo4j query result
-        """
-        if not self.graph:
-            self.graph = Graph(
-                self.bolt_uri, user=self.username, password=self.password
-            )
-        if param is not None:
-            return self.graph.run(query, parameters=param)
-        else:
-            return self.graph.run(query)
-
     def get_complex_portal_data(self):
         """
         Gets and processes Complex Portal data - Complex Portal ID,
         complex composition str and entries
         """
         print("Querying Complex Portal data")
-        mappings = self._run_query(query=qy.COMPLEX_PORTAL_DATA_QUERY)
+        mappings = ut.run_query(self.neo4j_info, qy.COMPLEX_PORTAL_DATA_QUERY)
         for row in mappings:
             accessions = row.get("uniq_accessions")
             complex_id = row.get("complex_id")
@@ -145,7 +114,8 @@ class Neo4JProcessComplex:
             param_val (string): parameter value
         """
         print(f"Creating relationship between {n1_name} and {n2_name} nodes - START")
-        self._run_query(
+        ut.run_query(
+            self.neo4j_info,
             query_name,
             param={param_name: param_val},
         )
@@ -155,13 +125,13 @@ class Neo4JProcessComplex:
         """
         Create subcomplex relationships in the graph db
         """
-        return self._run_query(qy.CREATE_SUBCOMPLEX_RELATION_QUERY)
+        return ut.run_query(self.neo4j_info, qy.CREATE_SUBCOMPLEX_RELATION_QUERY)
 
     def drop_PDBComplex_nodes(self):
         """
         Drop any existing PDB complex nodes in the graph db
         """
-        return self._run_query(qy.DROP_PDB_COMPLEX_NODES_QUERY)
+        return ut.run_query(self.neo4j_info, qy.DROP_PDB_COMPLEX_NODES_QUERY)
 
     def process_assembly_data(self):
         """
@@ -169,7 +139,7 @@ class Neo4JProcessComplex:
         Complex Portal data and processes them for use later.
         """
         print("Querying PDB Assembly data")
-        mappings = self._run_query(qy.PDB_ASSEMBLY_DATA_QUERY)
+        mappings = ut.run_query(self.neo4j_info, qy.PDB_ASSEMBLY_DATA_QUERY)
         for row in mappings:
 
             uniq_accessions = row.get("accessions")
@@ -269,7 +239,6 @@ class Neo4JProcessComplex:
             )
 
         print("Done querying PDB Assembly data")
-        print(len(self.reference_mapping))
 
     def create_graph_relationships(self):
         """
@@ -369,12 +338,7 @@ def main():
         csv_path=args.csv_path,
     )
 
-    complex.get_complex_portal_data()
-    complex.drop_PDBComplex_nodes()
-    complex.process_assembly_data()
-    complex.create_graph_relationships()
-    complex.create_subcomplex_relationships()
-    complex.export_csv()
+    complex.run_process()
 
 
 if __name__ == "__main__":

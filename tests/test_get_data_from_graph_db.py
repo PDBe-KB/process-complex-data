@@ -437,37 +437,37 @@ class TestComplexData(TestCase):
         self.password = "mock_password"
         self.bolt_uri = "neo4j://"
 
-    @patch("complexes.utils.get_data_from_graph_db.GetComplexData._run_query")
+    @patch("complexes.utils.utility.run_query")
     def test_uniprot_molecule_names(self, rq):
         complex_obj = GetComplexData(self.bolt_uri, self.username, self.password)
         rq.return_value = mock_uniprot_data
         complex_obj._populate_molecule_names_from_uniprot_or_rfam("uniprot")
         self.assertDictEqual(complex_obj.molecule_names, mock_uniprot_molecule_names)
 
-    @patch("complexes.utils.get_data_from_graph_db.GetComplexData._run_query")
+    @patch("complexes.utils.utility.run_query")
     def test_rfam_molecule_names(self, rq):
         complex_obj = GetComplexData(self.bolt_uri, self.username, self.password)
         rq.return_value = mock_rfam_data
         complex_obj._populate_molecule_names_from_uniprot_or_rfam("rfam")
         self.assertDictEqual(complex_obj.molecule_names, mock_rfam_molecule_names)
 
-    @patch("complexes.utils.get_data_from_graph_db.GetComplexData._run_query")
+    @patch("complexes.utils.utility.run_query")
     def test_entity_molecule_names(self, rq):
         complex_obj = GetComplexData(self.bolt_uri, self.username, self.password)
         rq.return_value = mock_entity_data
         complex_obj._populate_molecule_names_from_entity()
         self.assertDictEqual(complex_obj.molecule_names, mock_entity_molecule_names)
 
-    @patch("complexes.utils.get_data_from_graph_db.GetComplexData._run_query")
+    @patch("complexes.utils.utility.run_query")
     def test_get_pdb_complex_data(self, rq):
         complex_obj = GetComplexData(self.bolt_uri, self.username, self.password)
         rq.return_value = mock_pdb_complex_data
         complex_obj.get_pdb_complex_data()
         self.assertDictEqual(complex_obj.pdb_complexes, mock_pdb_complexes)
 
-    @patch("complexes.utils.get_data_from_graph_db.Graph.run")
-    def test_run_query(self, mock):
-        mock.return_value = True
-        complex_obj = GetComplexData(self.bolt_uri, self.username, self.password)
-        complex_obj._run_query("foo")
-        self.assertTrue(complex_obj.graph)
+    # @patch("complexes.utils.get_data_from_graph_db.Graph.run")
+    # def test_run_query(self, mock):
+    #     mock.return_value = True
+    #     complex_obj = GetComplexData(self.bolt_uri, self.username, self.password)
+    #     complex_obj._run_query("foo")
+    #     self.assertTrue(complex_obj.graph)
