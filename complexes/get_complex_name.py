@@ -331,7 +331,7 @@ class ProcessComplexName:
         skip_ribosome = False
         potential_name = ""
         if self.rna_polymer_accessions:
-            if DeriveName().has_ribosomal_rna(self.rna_polymer_accessions):
+            if DeriveName().has_ribosomal_rna_or_trna(self.rna_polymer_accessions):
                 logging.debug("has ribosomal RNA")
                 potential_name = DeriveName().get_name_from_names_for_ribosome(
                     self.unp_name_and_accession, cut_off=1
@@ -367,7 +367,7 @@ class ProcessComplexName:
         Checks whether the complex has tRNA
         """
         if self.rna_polymer_accessions and self.derived_complex_name_list:
-            if DeriveName().has_trna(self.rna_polymer_accessions):
+            if DeriveName().has_ribosomal_rna_or_trna(self.rna_polymer_accessions):
                 self.derived_complex_name_list.append("tRNA")
 
     def _process_complex_name(self):  # noqa: C901

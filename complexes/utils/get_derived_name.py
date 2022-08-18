@@ -102,7 +102,7 @@ class DeriveName:
 
         return None
 
-    def has_ribosomal_rna(self, rna_accessions):
+    def has_ribosomal_rna_or_trna(self, rna_accessions):
         """
         Return true if the accession matches any of the ribosome
         rfam accessions
@@ -117,22 +117,7 @@ class DeriveName:
         for rna_accession in rna_accessions:
             if rna_accession in self.ribosomal_rna_accessions:
                 return True
-        return False
-
-    def has_trna(self, rna_accessions):
-        """
-        Return true if the accession matches any of the tRNA
-        rfam accessions
-
-        Args:
-            rna_accessions (list): a list of accessions
-
-        Returns:
-            boolean: true if the accession matches any of the tRNA
-            rfam accessions
-        """
-        for rna_accession in rna_accessions:
-            if rna_accession in self.trna:
+            elif rna_accession in self.trna:
                 return True
         return False
 

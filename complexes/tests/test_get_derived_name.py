@@ -73,14 +73,14 @@ class TestGetDerivedName(TestCase):
     def test_has_ribosomal_rna(self):
         # Test whether rRNA Rfam accession is present
         message = "Test value is not true."
-        self.assertTrue(self.dn.has_ribosomal_rna(["RF00002"]), message)
-        self.assertFalse(self.dn.has_ribosomal_rna(["FOO"]), message)
+        self.assertTrue(self.dn.has_ribosomal_rna_or_trna(["RF00002"]), message)
+        self.assertFalse(self.dn.has_ribosomal_rna_or_trna(["FOO"]), message)
 
     def test_has_trna(self):
         # Test whether tRNA Rfam accession is present
         message = "Test value is not true."
-        self.assertTrue(self.dn.has_trna(["RF00005"]), message)
-        self.assertFalse(self.dn.has_trna(["FOO"]), message)
+        self.assertTrue(self.dn.has_ribosomal_rna_or_trna(["RF00005"]), message)
+        self.assertFalse(self.dn.has_ribosomal_rna_or_trna(["ASD"]), message)
 
     def test_get_name_from_names_for_ribosome(self):
         """
