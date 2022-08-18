@@ -1,4 +1,3 @@
-import argparse
 from collections import Counter, OrderedDict
 import logging
 from complexes.utils.get_data_from_graph_db import GetComplexData
@@ -7,9 +6,7 @@ from complexes.utils.get_derived_name import DeriveName
 from complexes.utils.get_data_from_complex_portal_ftp import GetComplexPortalData
 from complexes.utils import utility as ut
 from complexes.constants import complex_name_headers as csv_headers
-import time
-
-name_exclude_list = ["subunit", "component", "chain"]
+from complexes.constants import name_exclude_list
 
 
 class ProcessComplexName:
@@ -334,7 +331,7 @@ class ProcessComplexName:
         skip_ribosome = False
         potential_name = ""
         if self.rna_polymer_accessions:
-            if DeriveName().has_ribosomal_rna(self.rna_polymer_accessions):
+            if DeriveName().has_ribosomal_rna_or_trna(self.rna_polymer_accessions):
                 logging.debug("has ribosomal RNA")
                 potential_name = DeriveName().get_name_from_names_for_ribosome(
                     self.unp_name_and_accession, cut_off=1
@@ -370,7 +367,7 @@ class ProcessComplexName:
         Checks whether the complex has tRNA
         """
         if self.rna_polymer_accessions and self.derived_complex_name_list:
-            if DeriveName().has_trna(self.rna_polymer_accessions):
+            if DeriveName().has_ribosomal_rna_or_trna(self.rna_polymer_accessions):
                 self.derived_complex_name_list.append("tRNA")
 
     def _process_complex_name(self):  # noqa: C901
@@ -668,76 +665,3 @@ class ProcessComplexName:
                 "derived_complex_name": derived_complex_name,
                 "complex_name_type": self.complex_name_type,
             }
-
-
-def run():
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument(
-        "-b",
-        "--bolt-url",
-        required=True,
-        help="BOLT url",
-    )
-
-    parser.add_argument(
-        "-u",
-        "--username",
-        required=True,
-        help="DB username",
-    )
-
-    parser.add_argument(
-        "-p",
-        "--password",
-        required=True,
-        help="DB password",
-    )
-
-    parser.add_argument(
-        "-o",
-        "--csv-path",
-        required=True,
-        help="Path to output CSV file containing complexes names",
-    )
-
-    parser.add_argument(
-        "-i1",
-        "--molecule-name-path",
-        required=True,
-        help="Path to input CSV file containing manually curated complexes names",
-    )
-
-    parser.add_argument(
-        "-i2",
-        "--molecule-components-path",
-        required=True,
-        help="Path to input CSV file containing manually curated complexes components",
-    )
-
-    parser.add_argument(
-        "-i3",
-        "--complex-portal-path",
-        required=True,
-        help="Path to Complex Portal ftp site",
-    )
-
-    args = parser.parse_args()
-
-    complex = ProcessComplexName(
-        bolt_uri=args.bolt_url,
-        username=args.username,
-        password=args.password,
-        csv_path=args.csv_path,
-        molecule_name_path=args.molecule_name_path,
-        molecule_components_path=args.molecule_components_path,
-        complex_portal_path=args.complex_portal_path,
-    )
-
-    complex.run_process()
-
-
-if __name__ == "__main__":
-    start_time = time.time()
-    run()
-    print("Process two takes: --- %s seconds ---" % (time.time() - start_time))

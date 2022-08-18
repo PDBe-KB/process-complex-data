@@ -10,3 +10,5 @@ complex_name_headers = [
     "derived_complex_name",
     "complex_name_type",
 ]
+
+name_exclude_list = ["subunit", "component", "chain"]

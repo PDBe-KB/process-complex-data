@@ -1,4 +1,3 @@
 numpy
 pandas
 py2neo
-python-csv

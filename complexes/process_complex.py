@@ -1,10 +1,8 @@
-import argparse
 from collections import OrderedDict
 from complexes import queries as qy
 from complexes.utils import utility as ut
 from complexes.constants import complex_mapping_headers as csv_headers
 import hashlib
-import time
 
 
 class Neo4JProcessComplex:
@@ -296,52 +294,3 @@ class Neo4JProcessComplex:
             param_val=self.complex_params_list,
         )
         print("Done creating relationships between nodes")
-
-
-def main():
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument(
-        "-b",
-        "--bolt-url",
-        required=True,
-        help="BOLT url",
-    )
-
-    parser.add_argument(
-        "-u",
-        "--username",
-        required=True,
-        help="DB username",
-    )
-
-    parser.add_argument(
-        "-p",
-        "--password",
-        required=True,
-        help="DB password",
-    )
-
-    parser.add_argument(
-        "-o",
-        "--csv-path",
-        required=True,
-        help="Path to CSV file containing complexes information",
-    )
-
-    args = parser.parse_args()
-
-    complex = Neo4JProcessComplex(
-        bolt_uri=args.bolt_url,
-        username=args.username,
-        password=args.password,
-        csv_path=args.csv_path,
-    )
-
-    complex.run_process()
-
-
-if __name__ == "__main__":
-    start_time = time.time()
-    main()
-    print("Process one takes: --- %s seconds ---" % (time.time() - start_time))
