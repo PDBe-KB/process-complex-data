@@ -4,9 +4,20 @@ from complexes.utils import utility as ut
 from complexes.constants import complex_mapping_headers as csv_headers
 import hashlib
 
+# TODO This class is doing two very different things - Split into two classes
+# One should perform various Neo4j DB operations (drop, create, etc)
+# The other should do the data processing
+
 
 class Neo4JProcessComplex:
+    # TODO I suggest this class should only do the data processing
+    """
+    This class is responsible for processing data related to unique complexes
+    and to create persistent, unique complex identifiers
+    """
+
     def __init__(self, bolt_uri, username, password, csv_path):
+        # TODO Check if all this attributes are needed
         self.neo4j_info = (bolt_uri, username, password)
         self.csv_path = csv_path
         self.dict_complex_portal_id = {}
@@ -23,11 +34,23 @@ class Neo4JProcessComplex:
         self.complexes_unique_to_complex_portal = []
 
     def run_process(self):
+        """
+        Main method to run all the steps of the process
+
+        Returns:
+            none
+        """
+        # TODO Check if the consecutive steps should depend on each other
+        # E.g. should the pipeline stop if there's no data from complex portal? (I think yes)
         self.get_complex_portal_data()
+        # TODO move drop_PDBComplex_nodes() to a new class
         self.drop_PDBComplex_nodes()
         self.process_assembly_data()
+        # TODO move create_graph_relationships() to a new class
         self.create_graph_relationships()
+        # TODO move create_subcomplex_relationships() to a new class
         self.create_subcomplex_relationships()
+        # TODO I would consider moving this call outside of the class
         ut.export_csv(
             self.reference_mapping,
             "md5_obj",
@@ -35,6 +58,72 @@ class Neo4JProcessComplex:
             self.csv_path,
             "complexes_mapping.csv",
         )
+
+    def get_complex_portal_data(self):
+        """
+        Gets and processes Complex Portal data - Complex Portal ID,
+        complex composition str and entries
+
+        Returns:
+            none
+        """
+        print("Querying Complex Portal data")
+        mappings = ut.run_query(self.neo4j_info, qy.COMPLEX_PORTAL_DATA_QUERY)
+        for row in mappings:
+            accessions = row.get("uniq_accessions")
+            complex_id = row.get("complex_id")
+            entries = row.get("entries_str")
+            self.dict_complex_portal_id[accessions] = complex_id
+            self.dict_complex_portal_entries[complex_id] = entries
+
+    def drop_PDBComplex_nodes(self):
+        """
+        Drop any existing PDB complex nodes in the graph db
+        """
+        # TODO move this method to a new class that does Neo4j stuff
+        return ut.run_query(self.neo4j_info, qy.DROP_PDB_COMPLEX_NODES_QUERY)
+
+    def process_assembly_data(self):
+        """
+        Aggregate unique complex compositions from PDB data, compares them to
+        Complex Portal data and processes them for use later.
+        """
+        print("Querying PDB Assembly data")
+        mappings = ut.run_query(self.neo4j_info, qy.PDB_ASSEMBLY_DATA_QUERY)
+        for row in mappings:
+            self._process_mapping(row)
+
+        # create list of common Complex and PDB_Complex nodes
+        for common_complex in self.common_complexes:
+            self._update_complex_params_list(common_complex)
+
+        print("Done querying PDB Assembly data")
+
+    def _process_mapping(self, row):
+        uniq_accessions = row.get("accessions")
+        assemblies = row.get("assemblies")
+        # remove all occurences of NA_ from the unique complex combination
+        tmp_uniq_accessions = uniq_accessions.replace("NA_", "")
+        # pdb_complex_id = basic_complex_string + str(uniq_id)
+        accession_hash = hashlib.md5(tmp_uniq_accessions.encode("utf-8")).hexdigest()
+        complex_portal_id = self.dict_complex_portal_id.get(tmp_uniq_accessions)
+        # print(f"Printing Complex Portal ID: {complex_portal_id}")
+        pdb_complex_id = self._use_persistent_identifier(
+            accession_hash, tmp_uniq_accessions, complex_portal_id, assemblies
+        )
+        # common complex; delete from dictionary else will be processed again
+        if complex_portal_id is not None:
+            del self.dict_complex_portal_id[tmp_uniq_accessions]
+            self.common_complexes.append((pdb_complex_id, complex_portal_id))
+        # keep data for each PDB complex in dict_pdb_complex to be used later
+        self.dict_pdb_complex[pdb_complex_id] = (
+            tmp_uniq_accessions,
+            assemblies,
+        )
+        for uniq_accession in uniq_accessions.split(","):
+            self._process_uniq_accession(pdb_complex_id, uniq_accession)
+        for uniq_assembly in assemblies.split(","):
+            self._process_uniq_assembly(pdb_complex_id, uniq_assembly)
 
     def _use_persistent_identifier(
         self, hash_str, accession, complex_portal_id, entries
@@ -84,20 +173,6 @@ class Neo4JProcessComplex:
             }
         return pdb_complex_id
 
-    def get_complex_portal_data(self):
-        """
-        Gets and processes Complex Portal data - Complex Portal ID,
-        complex composition str and entries
-        """
-        print("Querying Complex Portal data")
-        mappings = ut.run_query(self.neo4j_info, qy.COMPLEX_PORTAL_DATA_QUERY)
-        for row in mappings:
-            accessions = row.get("uniq_accessions")
-            complex_id = row.get("complex_id")
-            entries = row.get("entries_str")
-            self.dict_complex_portal_id[accessions] = complex_id
-            self.dict_complex_portal_entries[complex_id] = entries
-
     def _create_nodes_relationship(
         self, query_name, n1_name, n2_name, param_name, param_val
     ):
@@ -119,124 +194,72 @@ class Neo4JProcessComplex:
         )
         print(f"Creating relationship between {n1_name} and {n2_name} nodes - DONE")
 
-    def create_subcomplex_relationships(self):
-        """
-        Create subcomplex relationships in the graph db
-        """
-        return ut.run_query(self.neo4j_info, qy.CREATE_SUBCOMPLEX_RELATION_QUERY)
+    def _process_uniq_assembly(self, pdb_complex_id, uniq_assembly):
+        [entry, _] = uniq_assembly.split("_")
+        self.assembly_params_list.append(
+            {
+                "complex_id": str(pdb_complex_id),
+                "assembly_id": str(uniq_assembly),
+                "entry_id": str(entry),
+            }
+        )
 
-    def drop_PDBComplex_nodes(self):
-        """
-        Drop any existing PDB complex nodes in the graph db
-        """
-        return ut.run_query(self.neo4j_info, qy.DROP_PDB_COMPLEX_NODES_QUERY)
-
-    def process_assembly_data(self):
-        """
-        Aggregate unique complex compositions from PDB data, compares them to
-        Complex Portal data and processes them for use later.
-        """
-        print("Querying PDB Assembly data")
-        mappings = ut.run_query(self.neo4j_info, qy.PDB_ASSEMBLY_DATA_QUERY)
-        for row in mappings:
-
-            uniq_accessions = row.get("accessions")
-            assemblies = row.get("assemblies")
-
-            # remove all occurences of NA_ from the unique complex combination
-            tmp_uniq_accessions = uniq_accessions.replace("NA_", "")
-
-            # pdb_complex_id = basic_complex_string + str(uniq_id)
-            accession_hash = hashlib.md5(
-                tmp_uniq_accessions.encode("utf-8")
-            ).hexdigest()
-            complex_portal_id = self.dict_complex_portal_id.get(tmp_uniq_accessions)
-
-            # print(f"Printing Complex Portal ID: {complex_portal_id}")
-            pdb_complex_id = self._use_persistent_identifier(
-                accession_hash, tmp_uniq_accessions, complex_portal_id, assemblies
-            )
-
-            # common complex; delete from dictionary else will be processed again
-            if complex_portal_id is not None:
-                del self.dict_complex_portal_id[tmp_uniq_accessions]
-                self.common_complexes.append((pdb_complex_id, complex_portal_id))
-
-            # keep data for each PDB complex in dict_pdb_complex to be used later
-            self.dict_pdb_complex[pdb_complex_id] = (
-                tmp_uniq_accessions,
-                assemblies,
-            )
-
-            for uniq_accession in uniq_accessions.split(","):
-                tokens = uniq_accession.split("_")
-
-                # handle cases of PDB entity
-                if len(tokens) == 4:
-                    [_, entry_id, entity_id, stoichiometry] = tokens
-                    self.entity_params_list.append(
-                        {
-                            "complex_id": str(pdb_complex_id),
-                            "entry_id": str(entry_id),
-                            "entity_id": str(entity_id),
-                            "stoichiometry": str(stoichiometry),
-                        }
-                    )
-
-                # handle cases of UniProt
-                elif len(tokens) == 3:
-                    [accession, stoichiometry, tax_id] = tokens
-                    self.accession_params_list.append(
-                        {
-                            "complex_id": str(pdb_complex_id),
-                            "accession": str(accession),
-                            "stoichiometry": str(stoichiometry),
-                        }
-                    )
-
-                # handle unmapped polymers and Rfam accessions
-                elif len(tokens) == 1:
-                    token = tokens[0]
-
-                    # check for unmapped polymers (:UNMAPPED string)
-                    if ":UNMAPPED" in token:
-                        polymer_type = token.replace(":UNMAPPED", "")
-                        self.unmapped_polymer_params_list.append(
-                            {
-                                "complex_id": str(pdb_complex_id),
-                                "polymer_type": str(polymer_type),
-                            }
-                        )
-
-                    # handle Rfam
-                    else:
-                        self.rfam_params_list.append(
-                            {
-                                "complex_id": str(pdb_complex_id),
-                                "rfam_acc": str(token),
-                            }
-                        )
-
-            for uniq_assembly in assemblies.split(","):
-                [entry, _] = uniq_assembly.split("_")
-                self.assembly_params_list.append(
-                    {
-                        "complex_id": str(pdb_complex_id),
-                        "assembly_id": str(uniq_assembly),
-                        "entry_id": str(entry),
-                    }
-                )
-        # create list of common Complex and PDB_Complex nodes
-        for common_complex in self.common_complexes:
-            (pdb_complex_id, complex_portal_id) = common_complex
-            self.complex_params_list.append(
+    def _process_uniq_accession(self, pdb_complex_id, uniq_accession):
+        tokens = uniq_accession.split("_")
+        # handle cases of PDB entity
+        if len(tokens) == 4:
+            [_, entry_id, entity_id, stoichiometry] = tokens
+            self.entity_params_list.append(
                 {
-                    "pdb_complex_id": str(pdb_complex_id),
-                    "complex_portal_id": str(complex_portal_id),
+                    "complex_id": str(pdb_complex_id),
+                    "entry_id": str(entry_id),
+                    "entity_id": str(entity_id),
+                    "stoichiometry": str(stoichiometry),
                 }
             )
 
-        print("Done querying PDB Assembly data")
+        # handle cases of UniProt
+        elif len(tokens) == 3:
+            [accession, stoichiometry, tax_id] = tokens
+            self.accession_params_list.append(
+                {
+                    "complex_id": str(pdb_complex_id),
+                    "accession": str(accession),
+                    "stoichiometry": str(stoichiometry),
+                }
+            )
+
+        # handle unmapped polymers and Rfam accessions
+        elif len(tokens) == 1:
+            token = tokens[0]
+
+            # check for unmapped polymers (:UNMAPPED string)
+            if ":UNMAPPED" in token:
+                polymer_type = token.replace(":UNMAPPED", "")
+                self.unmapped_polymer_params_list.append(
+                    {
+                        "complex_id": str(pdb_complex_id),
+                        "polymer_type": str(polymer_type),
+                    }
+                )
+
+            # handle Rfam
+            else:
+                self.rfam_params_list.append(
+                    {
+                        "complex_id": str(pdb_complex_id),
+                        "rfam_acc": str(token),
+                    }
+                )
+
+    def _update_complex_params_list(self, common_complex):
+        (pdb_complex_id, complex_portal_id) = common_complex
+        self.complex_params_list.append(
+            {
+                "pdb_complex_id": str(pdb_complex_id),
+                "complex_portal_id": str(complex_portal_id),
+            }
+        )
 
     def create_graph_relationships(self):
         """
@@ -244,6 +267,7 @@ class Neo4JProcessComplex:
         graph db - Uniprot, PDBComplex, Entity, Rfam, Unmapped
         Polymer, Assembly and Complex
         """
+        # TODO move this method into a new class that does Neo4j stuff
         print("Start creating relationships betweeen nodes")
         # Create relationship between Uniprot and PDBComplex nodes
         self._create_nodes_relationship(
@@ -294,3 +318,10 @@ class Neo4JProcessComplex:
             param_val=self.complex_params_list,
         )
         print("Done creating relationships between nodes")
+
+    def create_subcomplex_relationships(self):
+        """
+        Create subcomplex relationships in the graph db
+        """
+        # TODO move this method into a new class that does Neo4j stuff
+        return ut.run_query(self.neo4j_info, qy.CREATE_SUBCOMPLEX_RELATION_QUERY)
