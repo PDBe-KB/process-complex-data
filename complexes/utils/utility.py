@@ -48,6 +48,7 @@ def merge_csv_files(
 ):
     """
     Merge the csv files produced by the proccesses above into a single file
+    and reorder content
 
     Args:
         filename1 (str, optional): CSV file produced by the first process. Defaults to
@@ -59,5 +60,24 @@ def merge_csv_files(
     df1 = pd.read_csv(os.path.join(csv_path, filename1))
     df2 = pd.read_csv(os.path.join(csv_path, filename2))
     merged_df = df1.merge(df2, on="pdb_complex_id")
-    merged_df.to_csv(os.path.join(csv_path, output_filename), index=False)
+    merged_df["complex_name_merged"] = (
+        merged_df["complex_name"]
+        .combine_first(merged_df["derived_complex_name"])
+        .astype(str)
+    )
+    merged_df.drop(["complex_name", "derived_complex_name"], axis=1, inplace=True)
+    merged_df.rename({"complex_name_merged": "complex_name"}, axis=1, inplace=True)
+    df = merged_df.reindex(
+        columns=[
+            "md5_obj",
+            "pdb_complex_id",
+            "complex_portal_id",
+            "accession",
+            "complex_name",
+            "complex_name_type",
+            "entries",
+        ]
+    )
+    df["complex_name"] = df["complex_name"].replace({"nan": ""})
+    df.to_csv(os.path.join(csv_path, output_filename), index=False)
     print(f"File {output_filename} has been produced")
