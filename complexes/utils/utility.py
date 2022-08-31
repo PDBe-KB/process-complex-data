@@ -24,6 +24,24 @@ def export_csv(data, key_name, headers, csv_path, filename):
     print(f"File {filename} has been produced")
 
 
+def clean_files(
+    csv_path, files_to_remove=("complexes_name.csv", "complexes_mapping.csv")
+):
+    """Removes the parent CSV files after merging them into a single file
+
+    Args:
+        csv_path (str): The path to the parent CSV files
+        files_to_remove (tuple, optional): The files to remove. Defaults to
+                                           ("complexes_mapping.csv",
+                                            "complexes_mapping.csv").
+    """
+    for filename in files_to_remove:
+        try:
+            os.remove(os.path.join(csv_path, filename))
+        except FileNotFoundError:
+            print(f"File {filename} does not exist in {csv_path}")
+
+
 def run_query(neo4j_info, query, param=None):
     """General function to run neo4j query
 
@@ -81,8 +99,3 @@ def merge_csv_files(
     df["complex_name"] = df["complex_name"].replace({"nan": ""})
     df.to_csv(os.path.join(csv_path, output_filename), index=False)
     print(f"File {output_filename} has been produced")
-
-    def clean_files(
-        csv_path, files_to_remove=("complexes_mapping.csv", "complexes_mapping.csv")
-    ):
-        pass
