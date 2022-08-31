@@ -1,5 +1,3 @@
-import os
-
 from complexes.get_complex_name import ProcessComplexName
 from unittest import TestCase
 
@@ -689,8 +687,6 @@ class TestComplexName(TestCase):
             self.username,
             self.password,
             self.csv_path,
-            os.path.join("complexes", "tests", "data", "complexes_molecules.csv"),
-            os.path.join("complexes", "tests", "data", "complexes_components.csv"),
             self.complex_portal_path,
         )
         complex_obj.complex_data = mock_pdb_complexes_data_one
@@ -707,8 +703,6 @@ class TestComplexName(TestCase):
             self.username,
             self.password,
             self.csv_path,
-            os.path.join("complexes", "tests", "data", "complexes_molecules.csv"),
-            os.path.join("complexes", "tests", "data", "complexes_components.csv"),
             self.complex_portal_path,
         )
         complex_obj.complex_portal_entries = (
@@ -738,8 +732,6 @@ class TestComplexName(TestCase):
             self.username,
             self.password,
             self.csv_path,
-            os.path.join("complexes", "tests", "data", "complexes_molecules.csv"),
-            os.path.join("complexes", "tests", "data", "complexes_components.csv"),
             self.complex_portal_path,
         )
         complex_obj.complex_data = mock_pdb_complexes_data_three
@@ -760,8 +752,6 @@ class TestComplexName(TestCase):
             self.username,
             self.password,
             self.csv_path,
-            os.path.join("complexes", "tests", "data", "complexes_molecules.csv"),
-            os.path.join("complexes", "tests", "data", "complexes_components.csv"),
             self.complex_portal_path,
         )
         complex_obj.complex_data = mock_pdb_complexes_data_four
@@ -778,8 +768,6 @@ class TestComplexName(TestCase):
             self.username,
             self.password,
             self.csv_path,
-            os.path.join("complexes", "tests", "data", "complexes_molecules.csv"),
-            os.path.join("complexes", "tests", "data", "complexes_components.csv"),
             self.complex_portal_path,
         )
         complex_obj.complex_portal_entries = (
@@ -808,8 +796,6 @@ class TestComplexName(TestCase):
             self.username,
             self.password,
             self.csv_path,
-            os.path.join("complexes", "tests", "data", "complexes_molecules.csv"),
-            os.path.join("complexes", "tests", "data", "complexes_components.csv"),
             self.complex_portal_path,
         )
         complex_obj.complex_data = mock_pdb_complexes_data_six
@@ -830,8 +816,6 @@ class TestComplexName(TestCase):
             self.username,
             self.password,
             self.csv_path,
-            os.path.join("complexes", "tests", "data", "complexes_molecules.csv"),
-            os.path.join("complexes", "tests", "data", "complexes_components.csv"),
             self.complex_portal_path,
         )
         complex_obj.complex_data = mock_pdb_complexes_data_seven
@@ -866,8 +850,6 @@ class TestComplexName(TestCase):
             self.username,
             self.password,
             self.csv_path,
-            os.path.join("complexes", "tests", "data", "complexes_molecules.csv"),
-            os.path.join("complexes", "tests", "data", "complexes_components.csv"),
             self.complex_portal_path,
         )
         complex_obj.complex_data = mock_pdb_complexes_data_nine
