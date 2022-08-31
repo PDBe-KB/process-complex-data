@@ -16,8 +16,6 @@ class ProcessComplexName:
         username,
         password,
         csv_path,
-        molecule_name_path,
-        molecule_components_path,
         complex_portal_path,
     ):
         # TODO: Check if all of these things have to be initialised here
@@ -30,8 +28,6 @@ class ProcessComplexName:
         self.username = username
         self.password = password
         self.csv_path = csv_path
-        self.molecule_name_path = molecule_name_path
-        self.molecule_components_path = molecule_components_path
         self.complex_portal_path = complex_portal_path
         self.complex_data = {}
         self.complex_data_dict = OrderedDict()
