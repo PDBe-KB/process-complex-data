@@ -10,16 +10,8 @@ class GetAnnotatedName:
     """
 
     def __init__(self):
-        self.molecule_name_url = """https://docs.google.com/spreadsheets/d/e/
-                                    2PACX-1vT0qkSe3zrNxGFNkM
-                                    _V0Y8fyhWWdrV6X50_gpObL3EAbnVbrw5VgFBr_
-                                    GxEQCz0oLeQdzWFbGKuoFqU/
-                                    pub?output=csv"""
-        self.molecule_components_url = """https://docs.google.com/spreadsheets/d/e/
-                                          2PACX-1vRUKkRAdzaVL9lDr2n4skuD_
-                                          drXy9eAqSYnkNN2nBuCs6RRBiQ0n0Dq1RtiobaaXkm_
-                                          y-Z3RzSfmu8m/
-                                          pub?output=csv"""
+        self.molecule_name_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT0qkSe3zrNxGFNkM_V0Y8fyhWWdrV6X50_gpObL3EAbnVbrw5VgFBr_GxEQCz0oLeQdzWFbGKuoFqU/pub?output=csv"  # noqa: B950
+        self.molecule_components_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRUKkRAdzaVL9lDr2n4skuD_drXy9eAqSYnkNN2nBuCs6RRBiQ0n0Dq1RtiobaaXkm_y-Z3RzSfmu8m/pub?output=csv"  # noqa: B950
         self.molecule_names = {}
         self.molecule_components = {}
         self.molecule_info = {}
@@ -93,3 +85,9 @@ class GetAnnotatedName:
             if components:
                 components_str = ",".join(sorted(components))
                 self.molecule_info[components_str] = complex_name
+
+
+if __name__ == "__main__":
+    sc = GetAnnotatedName()
+    sc.get_data()
+    print(sc.molecule_info)
