@@ -1,5 +1,6 @@
 import csv
 import logging
+import requests
 
 
 class GetAnnotatedName:
@@ -8,9 +9,17 @@ class GetAnnotatedName:
     names to the complex naming process
     """
 
-    def __init__(self, molecule_name_path, molecule_components_path):
-        self.molecule_name_path = molecule_name_path
-        self.molecule_components_path = molecule_components_path
+    def __init__(self):
+        self.molecule_name_url = """https://docs.google.com/spreadsheets/d/e/
+                                    2PACX-1vT0qkSe3zrNxGFNkM
+                                    _V0Y8fyhWWdrV6X50_gpObL3EAbnVbrw5VgFBr_
+                                    GxEQCz0oLeQdzWFbGKuoFqU/
+                                    pub?output=csv"""
+        self.molecule_components_url = """https://docs.google.com/spreadsheets/d/e/
+                                          2PACX-1vRUKkRAdzaVL9lDr2n4skuD_
+                                          drXy9eAqSYnkNN2nBuCs6RRBiQ0n0Dq1RtiobaaXkm_
+                                          y-Z3RzSfmu8m/
+                                          pub?output=csv"""
         self.molecule_names = {}
         self.molecule_components = {}
         self.molecule_info = {}
@@ -20,10 +29,10 @@ class GetAnnotatedName:
         Gets the path of the csv files that contain the manually curated
         complexes annotation and invokes the methods that read the files.
         """
-        logging.debug("Reading %s" % self.molecule_name_path)
-        self._read_molecule_names(self.molecule_name_path)
-        logging.debug("Reading %s" % self.molecule_components_path)
-        self._read_components(self.molecule_components_path)
+        logging.debug("Reading %s" % self.molecule_name_url)
+        self._read_molecule_names(self.molecule_name_url)
+        logging.debug("Reading %s" % self.molecule_components_url)
+        self._read_components(self.molecule_components_url)
         logging.debug("Collating data")
         self._collate_data()
 
@@ -36,13 +45,13 @@ class GetAnnotatedName:
             molecule_name_file (csv file): Contains the description
             of the complex
         """
-        with open(molecule_name_file) as in_file:
-            data = csv.DictReader(in_file)
-            for row in data:
-                complex_id = row.get("complex_number")
-                name = row.get("PDB101-name")
-
-                self.molecule_names[complex_id.strip()] = name.strip()
+        with requests.get(molecule_name_file, stream=True) as r:
+            lines = (line.decode("utf-8") for line in r.iter_lines())
+            next(lines)
+            for row in csv.reader(lines):
+                complex_id = row[0].strip()
+                name = row[1].strip()
+                self.molecule_names[complex_id] = name
 
     def _read_components(self, component_file):
         """
@@ -54,23 +63,22 @@ class GetAnnotatedName:
             a complex with their
             accessions
         """
-        with open(component_file) as in_file:
-            data = csv.DictReader(in_file)
-            for row in data:
-                complex_id = row.get("complex_number")
-                accession = row.get("accession")
-                stoichiometry = row.get("stoichiometry")
+        with requests.get(component_file, stream=True) as r:
+            lines = (line.decode("utf-8") for line in r.iter_lines())
+            next(lines)
+            for row in csv.reader(lines):
+                complex_id = row[0].strip()
+                accession = row[1].strip()
+                stoichiometry = row[2].strip()
                 if accession not in ["none", "", None]:
                     row_dict = {
-                        "accession": accession.strip(),
-                        "stoichiometry": stoichiometry.strip(),
+                        "accession": accession,
+                        "stoichiometry": stoichiometry,
                         "accession_stoichiometry": "{}_{}".format(
-                            accession.strip(), stoichiometry.strip()
+                            accession, stoichiometry
                         ),
                     }
-                    self.molecule_components.setdefault(complex_id.strip(), []).append(
-                        row_dict
-                    )
+                    self.molecule_components.setdefault(complex_id, []).append(row_dict)
 
     def _collate_data(self):
         """
