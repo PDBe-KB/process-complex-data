@@ -32,25 +32,11 @@ def main():
         "-o",
         "--csv-path",
         required=True,
-        help="Path to output CSV files",
+        help="Path to output CSV file",
     )
 
     parser.add_argument(
-        "-i1",
-        "--molecule-name-path",
-        required=True,
-        help="Path to input CSV file containing manually curated complexes names",
-    )
-
-    parser.add_argument(
-        "-i2",
-        "--molecule-components-path",
-        required=True,
-        help="Path to input CSV file containing manually curated complexes components",
-    )
-
-    parser.add_argument(
-        "-i3",
+        "-i",
         "--complex-portal-path",
         required=True,
         help="Path to Complex Portal ftp site",
@@ -71,13 +57,12 @@ def main():
         username=args.username,
         password=args.password,
         csv_path=args.csv_path,
-        molecule_name_path=args.molecule_name_path,
-        molecule_components_path=args.molecule_components_path,
         complex_portal_path=args.complex_portal_path,
     )
     complex.run_process()
 
     ut.merge_csv_files(args.csv_path)
+    ut.clean_files(args.csv_path)
 
 
 if __name__ == "__main__":
