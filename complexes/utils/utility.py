@@ -81,3 +81,8 @@ def merge_csv_files(
     df["complex_name"] = df["complex_name"].replace({"nan": ""})
     df.to_csv(os.path.join(csv_path, output_filename), index=False)
     print(f"File {output_filename} has been produced")
+
+    def clean_files(
+        csv_path, files_to_remove=("complexes_mapping.csv", "complexes_mapping.csv")
+    ):
+        pass
