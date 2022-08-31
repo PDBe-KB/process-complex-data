@@ -144,9 +144,7 @@ class ProcessComplexName:
             str: manually curated complex name
         """
         if not self.annotated_names:
-            gan = GetAnnotatedName(
-                self.molecule_name_path, self.molecule_components_path
-            )
+            gan = GetAnnotatedName()
             gan.get_data()
             self.annotated_names = gan.molecule_info
         unp_components_with_stoch_string = ",".join(sorted(self.unp_only_components))
