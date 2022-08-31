@@ -85,9 +85,3 @@ class GetAnnotatedName:
             if components:
                 components_str = ",".join(sorted(components))
                 self.molecule_info[components_str] = complex_name
-
-
-if __name__ == "__main__":
-    sc = GetAnnotatedName()
-    sc.get_data()
-    print(sc.molecule_info)
