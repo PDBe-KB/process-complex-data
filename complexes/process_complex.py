@@ -2,7 +2,9 @@ from collections import OrderedDict
 from complexes import queries as qy
 from complexes.utils import utility as ut
 from complexes.constants import complex_mapping_headers as csv_headers
+import csv
 import hashlib
+import os
 
 # TODO This class is doing two very different things - Split into two classes
 # One should perform various Neo4j DB operations (drop, create, etc)
@@ -45,12 +47,13 @@ class Neo4JProcessComplex:
         self.get_complex_portal_data()
         # TODO move drop_PDBComplex_nodes() to a new class
         self.drop_PDBComplex_nodes()
+        self.get_reference_mapping()
         self.process_assembly_data()
         # TODO move create_graph_relationships() to a new class
         self.create_graph_relationships()
         # TODO move create_subcomplex_relationships() to a new class
         self.create_subcomplex_relationships()
-        # TODO I would consider moving this call outside of the class
+        # # TODO I would consider moving this call outside of the class
         ut.export_csv(
             self.reference_mapping,
             "md5_obj",
@@ -82,6 +85,27 @@ class Neo4JProcessComplex:
         """
         # TODO move this method to a new class that does Neo4j stuff
         return ut.run_query(self.neo4j_info, qy.DROP_PDB_COMPLEX_NODES_QUERY)
+
+    def get_reference_mapping(self, reference_filename="complexes_master.csv"):
+        """
+        Store existing mapping of complex composition string to pdb_complex_id
+        into a reference dictionary for lookup later
+
+        Args:
+            reference_filename (str, optional): Reference mapping file. Defaults to
+                                                "complexes_master.csv".
+        """
+        complete_filepath = os.path.join(self.csv_path, reference_filename)
+        if os.path.exists(complete_filepath):
+            with open(complete_filepath) as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    self.reference_mapping[row["md5_obj"]] = {
+                        "pdb_complex_id": row["pdb_complex_id"],
+                        "complex_portal_id": row["complex_portal_id"],
+                        "accession": row["accession"],
+                        "entries": row["entries"],
+                    }
 
     def process_assembly_data(self):
         """
@@ -147,6 +171,7 @@ class Neo4JProcessComplex:
         initial_num = 100001
         if hash_str in self.reference_mapping:
             pdb_complex_id = self.reference_mapping.get(hash_str).get("pdb_complex_id")
+            self.reference_mapping[hash_str]["entries"] = entries
         # when the dict is empty
         elif len(self.reference_mapping) == 0:
             pdb_complex_id = basic_PDB_complex_str + str(initial_num)
