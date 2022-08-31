@@ -88,7 +88,7 @@ class Neo4JProcessComplex:
 
     def get_reference_mapping(self, reference_filename="complexes_master.csv"):
         """
-        Store existing mapping of complex composition string to pdb_complex_id
+        Store existing mapping of complex-composition strings to pdb_complex_ids
         into a reference dictionary for lookup later
 
         Args:
