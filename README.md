@@ -27,7 +27,7 @@ pip install -r requirements.txt
 ### Basic usage
 
 ```shell
-python complexes/run_complexes.py -b <bolt_url> -u <username> -p <password> -o <output_csv_path> -i1 <input_molecules_name_path> -i2 <input_molecules_components_path> -i3 <complex_portal_path>`
+python pdbe_complexes/main.py -b <bolt_url> -u <username> -p <password> -o <output_csv_path> -i <complex_portal_path>`
 ```
 
 A short explanation for each command line argument is given below:
@@ -35,16 +35,14 @@ A short explanation for each command line argument is given below:
 - `bolt_url` = Neo4j bolt url
 - `username` = Neo4j username
 - `password` = Neo4j password
-- `output_csv_path` = The path to the output CSV files
-- `input_molecules_name_path` = The path to the input "complexes_molecules.csv" file
-- `input_molecules_components_path` = The path to the input "complexes_components.csv" file
+- `output_csv_path` = The path to the output CSV file
 - `complex_portal_path` = The path to the Complex Portal FTP site
 
 The manually curated complexes CSV files (`complexes_molecules.csv`, `complexes_components.csv`) are provided by Romana Gaborova, EMBL-EBI.
 
 ## Documentation
 
-Executing `run_complexes.py` runs two separate processes sequentially: `process_complex.py` and `get_complex_name.py`.
+Executing `main.py` runs two separate processes sequentially: `process_complex.py` and `get_complex_name.py`.
 The steps involved in each process are given below:
 
 ### process_complex.py
@@ -71,13 +69,13 @@ The steps involved in each process are given below:
 
 ### Post-process
 
-In the final step, the two CSV files are merged together into a single CSV file called `complexes_master.csv` using the `pdb_complex_id` as the column to join on.
+In the final step, the two CSV files are merged together into a single CSV file called `complexes_master.csv` using the `pdb_complex_id` as the column to join on. The parent CSV files are then deleted.
 
 ## Expected content of the CSV files (examples)
 
 ### complexes_mapping.csv
 
-|md5_obj                         |pdb_complex_id|accession           |complex_portal_id|assemblies                        |
+|md5_obj                         |pdb_complex_id|accession           |complex_portal_id|entries                           |
 |--------------------------------|--------------|--------------------|-----------------|----------------------------------|
 |52fce5e893d4552c319724c8b6ae7dab|PDB-CPX-100015|A0A010_2_67581      |                 |5b01_1,5b00_1                     |
 |e894061d1c2d6dd1e4683de2073998d0|PDB-CPX-100016|A0A011_2_67581      |                 |3vkc_1,3vkd_1,3vka_1,3vkb_1,3vk5_1|
@@ -98,7 +96,7 @@ In the final step, the two CSV files are merged together into a single CSV file 
 
 ### complexes_master.csv
 
-|md5_obj                         |pdb_complex_id|accession           |complex_portal_id        |assemblies                        |complex_name                                   |derived_complex_name|complex_name_type        |
+|md5_obj                         |pdb_complex_id|accession           |complex_portal_id        |entries.                          |complex_name                                   |derived_complex_name|complex_name_type        |
 |--------------------------------|--------------|--------------------|-------------------------|----------------------------------|-----------------------------------------------|--------------------|-------------------------|
 |52fce5e893d4552c319724c8b6ae7dab|PDB-CPX-100015|A0A010_2_67581      |                         |5b01_1,5b00_1                     |MoeN5                                          |                    |protein name from UniProt|
 |e894061d1c2d6dd1e4683de2073998d0|PDB-CPX-100016|A0A011_2_67581      |                         |3vkc_1,3vkd_1,3vka_1,3vkb_1,3vk5_1|MoeO5                                          |                    |protein name from UniProt|
