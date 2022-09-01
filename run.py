@@ -1,7 +1,7 @@
 import argparse
-from complexes.process_complex import Neo4JProcessComplex
-from complexes.get_complex_name import ProcessComplexName
-from complexes.utils import utility as ut
+from pdbe_complexes.process_complex import Neo4JProcessComplex
+from pdbe_complexes.get_complex_name import ProcessComplexName
+from pdbe_complexes.utils import utility as ut
 
 
 def main():
