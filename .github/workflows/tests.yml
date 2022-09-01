@@ -16,4 +16,4 @@ jobs:
           python -m pip install pytest codecov pytest-cov
       - name: Test with pytest
         run: |
-          pytest --cov=complexes
+          pytest --cov=pdbe_complexes
