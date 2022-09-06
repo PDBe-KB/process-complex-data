@@ -1,6 +1,7 @@
 import argparse
-from pdbe_complexes.process_complex import Neo4JProcessComplex
+
 from pdbe_complexes.get_complex_name import ProcessComplexName
+from pdbe_complexes.process_complex import Neo4JProcessComplex
 from pdbe_complexes.utils import utility as ut
 
 
@@ -63,6 +64,7 @@ def main():
 
     ut.merge_csv_files(args.csv_path)
     ut.clean_files(args.csv_path)
+    ut.copy_file(args.csv_path)
 
 
 if __name__ == "__main__":
