@@ -1,7 +1,7 @@
 name: Build and publish the package to internal PDBe PyPi registry
 
 env:
-  PACKAGE_NAME: starter
+  PACKAGE_NAME: pdbe_complexes
 
 on: [ push ]
 
