@@ -1,7 +1,9 @@
 import csv
+import os
+import shutil
+
 import pandas as pd
 from py2neo import Graph
-import os
 
 
 def export_csv(data, key_name, headers, csv_path, filename):
@@ -59,6 +61,18 @@ def run_query(neo4j_info, query, param=None):
         return graph.run(query, parameters=param)
     else:
         return graph.run(query)
+
+
+def copy_file(src, dst=None):
+    """
+    Utility function to copy file from one location to another
+
+    Args:
+        src (str): source path
+        dst (str, optional): target path. Defaults to None.
+    """
+    if dst:
+        shutil.copy2(src, dst)
 
 
 def merge_csv_files(
