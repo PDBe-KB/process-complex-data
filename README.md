@@ -48,6 +48,7 @@ The steps involved in each process are given below:
 ### process_complex.py
 - Gets complex-composition data from Complex Portal.
 - Drops existing PDBComplex nodes in the graph database.
+- Reads existing mapping of complex-composition strings to pdb_complex_ids (`complexes_master.csv`) and stores the data in a reference dictionary.
 - Gets complexes composition data from PDBe graph database.
 - Assigns unique PDB complex identifiers for each unique complex-composition and Complex Portal identifiers for consensus complex compositions.
 - Processes complex-composition data from the PDBe graph database to create relationships between selected pairs of nodes.
