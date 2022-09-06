@@ -19,12 +19,6 @@ class ProcessComplexName:
         csv_path,
         complex_portal_path,
     ):
-        # TODO: Check if all of these things have to be initialised here
-        # I'm fairly certain many of these can be deleted as they get
-        #  initialised later in _process_complex_name
-
-        # TODO Check if you really need all these attributes
-        #  (i.e. if all these variables need to have a global scope within the class
         self.bolt_host = bolt_uri
         self.username = username
         self.password = password
@@ -323,7 +317,6 @@ class ProcessComplexName:
         return complex_name
 
     def _check_ribosome(self):
-        # TODO Factor out these checking methods into a checking class
         """
         Checks whether the complex is a ribosome
 
@@ -378,8 +371,6 @@ class ProcessComplexName:
         complexes data from Complex Portal and PDB to assign
         names to the complexes
         """
-        # TODO Refactor the code so that it processes a single complex_id item
-        # This will allow the process to run in parallel
         for complex_id in self.complex_data:
 
             self._process_complex_id(complex_id)
@@ -434,7 +425,6 @@ class ProcessComplexName:
         # get a name for the complex
         complex_name = self._get_complex_name()
         # # check annotated names
-        # TODO check if any of these ifs should break/return (I think they should)
         if not complex_name and self.unp_only_components:
             potential_name = self.check_annotated_name()
             if potential_name:
