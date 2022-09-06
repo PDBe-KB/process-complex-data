@@ -1,10 +1,12 @@
-from collections import OrderedDict
-from pdbe_complexes import queries as qy
-from pdbe_complexes.utils import utility as ut
-from pdbe_complexes.constants import complex_mapping_headers as csv_headers
 import csv
 import hashlib
 import os
+from collections import OrderedDict
+
+from pdbe_complexes import queries as qy
+from pdbe_complexes.constants import complex_mapping_headers as csv_headers
+from pdbe_complexes.log import logger
+from pdbe_complexes.utils import utility as ut
 
 # TODO This class is doing two very different things - Split into two classes
 # One should perform various Neo4j DB operations (drop, create, etc)
@@ -70,7 +72,7 @@ class Neo4JProcessComplex:
         Returns:
             none
         """
-        print("Querying Complex Portal data")
+        logger.info("Querying Complex Portal data")
         mappings = ut.run_query(self.neo4j_info, qy.COMPLEX_PORTAL_DATA_QUERY)
         for row in mappings:
             accessions = row.get("uniq_accessions")
@@ -112,7 +114,7 @@ class Neo4JProcessComplex:
         Aggregate unique complex compositions from PDB data, compares them to
         Complex Portal data and processes them for use later.
         """
-        print("Querying PDB Assembly data")
+        logger.info("Querying PDB Assembly data")
         mappings = ut.run_query(self.neo4j_info, qy.PDB_ASSEMBLY_DATA_QUERY)
         for row in mappings:
             self._process_mapping(row)
@@ -121,7 +123,7 @@ class Neo4JProcessComplex:
         for common_complex in self.common_complexes:
             self._update_complex_params_list(common_complex)
 
-        print("Done querying PDB Assembly data")
+        logger.info("Done querying PDB Assembly data")
 
     def _process_mapping(self, row):
         uniq_accessions = row.get("accessions")
@@ -131,7 +133,7 @@ class Neo4JProcessComplex:
         # pdb_complex_id = basic_complex_string + str(uniq_id)
         accession_hash = hashlib.md5(tmp_uniq_accessions.encode("utf-8")).hexdigest()
         complex_portal_id = self.dict_complex_portal_id.get(tmp_uniq_accessions)
-        # print(f"Printing Complex Portal ID: {complex_portal_id}")
+        # logger.info(f"logger.infoing Complex Portal ID: {complex_portal_id}")
         pdb_complex_id = self._use_persistent_identifier(
             accession_hash, tmp_uniq_accessions, complex_portal_id, assemblies
         )
@@ -211,13 +213,17 @@ class Neo4JProcessComplex:
             param_name (string): parameter name
             param_val (string): parameter value
         """
-        print(f"Creating relationship between {n1_name} and {n2_name} nodes - START")
+        logger.info(
+            f"Creating relationship between {n1_name} and {n2_name} nodes - START"
+        )
         ut.run_query(
             self.neo4j_info,
             query_name,
             param={param_name: param_val},
         )
-        print(f"Creating relationship between {n1_name} and {n2_name} nodes - DONE")
+        logger.info(
+            f"Creating relationship between {n1_name} and {n2_name} nodes - DONE"
+        )
 
     def _process_uniq_assembly(self, pdb_complex_id, uniq_assembly):
         [entry, _] = uniq_assembly.split("_")
@@ -293,7 +299,7 @@ class Neo4JProcessComplex:
         Polymer, Assembly and Complex
         """
         # TODO move this method into a new class that does Neo4j stuff
-        print("Start creating relationships betweeen nodes")
+        logger.info("Start creating relationships betweeen nodes")
         # Create relationship between Uniprot and PDBComplex nodes
         self._create_nodes_relationship(
             query_name=qy.MERGE_ACCESSION_QUERY,
@@ -342,7 +348,7 @@ class Neo4JProcessComplex:
             param_name="complex_params_list",
             param_val=self.complex_params_list,
         )
-        print("Done creating relationships between nodes")
+        logger.info("Done creating relationships between nodes")
 
     def create_subcomplex_relationships(self):
         """
