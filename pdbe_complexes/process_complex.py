@@ -8,20 +8,14 @@ from pdbe_complexes.constants import complex_mapping_headers as csv_headers
 from pdbe_complexes.log import logger
 from pdbe_complexes.utils import utility as ut
 
-# TODO This class is doing two very different things - Split into two classes
-# One should perform various Neo4j DB operations (drop, create, etc)
-# The other should do the data processing
-
 
 class Neo4JProcessComplex:
-    # TODO I suggest this class should only do the data processing
     """
     This class is responsible for processing data related to unique complexes
     and to create persistent, unique complex identifiers
     """
 
     def __init__(self, bolt_uri, username, password, csv_path):
-        # TODO Check if all this attributes are needed
         self.neo4j_info = (bolt_uri, username, password)
         self.csv_path = csv_path
         self.dict_complex_portal_id = {}
@@ -44,18 +38,13 @@ class Neo4JProcessComplex:
         Returns:
             none
         """
-        # TODO Check if the consecutive steps should depend on each other
-        # E.g. should the pipeline stop if there's no data from complex portal? (I think yes)
+
         self.get_complex_portal_data()
-        # TODO move drop_PDBComplex_nodes() to a new class
         self.drop_PDBComplex_nodes()
         self.get_reference_mapping()
         self.process_assembly_data()
-        # TODO move create_graph_relationships() to a new class
         self.create_graph_relationships()
-        # TODO move create_subcomplex_relationships() to a new class
         self.create_subcomplex_relationships()
-        # # TODO I would consider moving this call outside of the class
         ut.export_csv(
             self.reference_mapping,
             "md5_obj",
@@ -85,7 +74,6 @@ class Neo4JProcessComplex:
         """
         Drop any existing PDB complex nodes in the graph db
         """
-        # TODO move this method to a new class that does Neo4j stuff
         return ut.run_query(self.neo4j_info, qy.DROP_PDB_COMPLEX_NODES_QUERY)
 
     def get_reference_mapping(self, reference_filename="complexes_master.csv"):
@@ -298,7 +286,6 @@ class Neo4JProcessComplex:
         graph db - Uniprot, PDBComplex, Entity, Rfam, Unmapped
         Polymer, Assembly and Complex
         """
-        # TODO move this method into a new class that does Neo4j stuff
         logger.info("Start creating relationships betweeen nodes")
         # Create relationship between Uniprot and PDBComplex nodes
         self._create_nodes_relationship(
@@ -354,5 +341,4 @@ class Neo4JProcessComplex:
         """
         Create subcomplex relationships in the graph db
         """
-        # TODO move this method into a new class that does Neo4j stuff
         return ut.run_query(self.neo4j_info, qy.CREATE_SUBCOMPLEX_RELATION_QUERY)
