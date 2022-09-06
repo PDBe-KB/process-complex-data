@@ -1,12 +1,13 @@
 from collections import Counter, OrderedDict
-import logging
-from pdbe_complexes.utils.get_data_from_graph_db import GetComplexData
-from pdbe_complexes.utils.get_annotated_name import GetAnnotatedName
-from pdbe_complexes.utils.get_derived_name import DeriveName
-from pdbe_complexes.utils.get_data_from_complex_portal_ftp import GetComplexPortalData
-from pdbe_complexes.utils import utility as ut
+
 from pdbe_complexes.constants import complex_name_headers as csv_headers
 from pdbe_complexes.constants import name_exclude_list
+from pdbe_complexes.log import logger
+from pdbe_complexes.utils import utility as ut
+from pdbe_complexes.utils.get_annotated_name import GetAnnotatedName
+from pdbe_complexes.utils.get_data_from_complex_portal_ftp import GetComplexPortalData
+from pdbe_complexes.utils.get_data_from_graph_db import GetComplexData
+from pdbe_complexes.utils.get_derived_name import DeriveName
 
 
 class ProcessComplexName:
@@ -109,7 +110,7 @@ class ProcessComplexName:
         """
         Get complexes related data from Complex Portal
         """
-        print("Start getting complex portal entries")
+        logger.info("Start getting complex portal entries")
         cd = GetComplexPortalData(self.complex_portal_path)
         cd.run_process()
         self.complex_portal_entries = cd.complex_portal_per_component_string
@@ -118,7 +119,7 @@ class ProcessComplexName:
         )
         self.complex_portal_names = cd.complex_portal_names
         self.complex_portal_dict = cd.complex_portal_component_dict
-        print("Done getting complex portal entries")
+        logger.info("Done getting complex portal entries")
 
     def _get_pdb_complex_entries(self):
         """
@@ -270,7 +271,7 @@ class ProcessComplexName:
         """
         complex_name = self._get_complex_portal_name()
         if complex_name:
-            logging.debug(complex_name)
+            logger.debug(complex_name)
             self.complex_name_type = "complex portal"
         elif len(self.unp_names) == 1 and self.all_protein_unp:
             complex_name = "".join(self.unp_names)
@@ -333,7 +334,7 @@ class ProcessComplexName:
         potential_name = ""
         if self.rna_polymer_accessions:
             if DeriveName().has_ribosomal_rna_or_trna(self.rna_polymer_accessions):
-                logging.debug("has ribosomal RNA")
+                logger.debug("has ribosomal RNA")
                 potential_name = DeriveName().get_name_from_names_for_ribosome(
                     self.unp_name_and_accession, cut_off=1
                 )
@@ -343,7 +344,7 @@ class ProcessComplexName:
             potential_name = DeriveName().get_name_from_names_for_ribosome(
                 self.unp_name_and_accession, cut_off=15
             )
-        logging.debug(potential_name)
+        logger.debug(potential_name)
 
         return potential_name
 
@@ -464,11 +465,11 @@ class ProcessComplexName:
                 and self.unp_name_and_accession
                 and self.rna_polymer_components
             ):
-                logging.debug("finding potential name for {}".format(complex_id))
+                logger.debug("finding potential name for {}".format(complex_id))
                 potential_name = self._check_ribosome()
 
                 if potential_name:
-                    logging.debug(potential_name)
+                    logger.debug(potential_name)
                     self.derived_complex_name_list.append(potential_name)
                     self.complex_name_type = "ribosome"
 
