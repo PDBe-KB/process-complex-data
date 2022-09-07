@@ -5,6 +5,8 @@ import shutil
 import pandas as pd
 from py2neo import Graph
 
+from pdbe_complexes.log import logger
+
 
 def export_csv(data, key_name, headers, csv_path, filename):
     """General function to generate CSV file
@@ -23,7 +25,7 @@ def export_csv(data, key_name, headers, csv_path, filename):
         file_csv.writerow([key_name, *headers])
         for key, val in data.items():
             file_csv.writerow([key] + [val.get(i, "") for i in headers])
-    print(f"File {filename} has been produced")
+    logger.info(f"Filename {filename} has been written to {csv_path}")
 
 
 def clean_files(
@@ -40,8 +42,9 @@ def clean_files(
     for filename in files_to_remove:
         try:
             os.remove(os.path.join(csv_path, filename))
+            logger.info(f"Filename {filename} in {csv_path} has been deleted")
         except FileNotFoundError:
-            print(f"File {filename} does not exist in {csv_path}")
+            logger.info(f"Filename {filename} does not exist in {csv_path}")
 
 
 def run_query(neo4j_info, query, param=None):
@@ -63,7 +66,7 @@ def run_query(neo4j_info, query, param=None):
         return graph.run(query)
 
 
-def copy_file(src, dst=None):
+def copy_file(src, dst=None, filename="complexes_master.csv"):
     """
     Utility function to copy file from one location to another
 
@@ -71,8 +74,10 @@ def copy_file(src, dst=None):
         src (str): source path
         dst (str, optional): target path. Defaults to None.
     """
+    source_filepath = os.path.join(src, filename)
     if dst:
-        shutil.copy2(src, dst)
+        shutil.copy2(source_filepath, dst)
+        logger.info(f"Filename {filename} has been copied to {dst}")
 
 
 def merge_csv_files(
@@ -112,4 +117,4 @@ def merge_csv_files(
     )
     df["complex_name"] = df["complex_name"].replace({"nan": ""})
     df.to_csv(os.path.join(csv_path, output_filename), index=False)
-    print(f"File {output_filename} has been produced")
+    logger.info(f"Filename {output_filename} has been written to {csv_path}")
