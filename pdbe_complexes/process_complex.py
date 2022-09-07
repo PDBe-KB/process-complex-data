@@ -344,4 +344,5 @@ class Neo4JProcessComplex:
         """
         Create subcomplex relationships in the graph db
         """
+        logger.info("Creating subcomplex relationships")
         return ut.run_query(self.neo4j_info, qy.CREATE_SUBCOMPLEX_RELATION_QUERY)
