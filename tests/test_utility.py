@@ -51,9 +51,7 @@ class TestUtility(TestCaseBase):
     def test_merge_csv_files(self):
         "Test if the merge_csv_files method creates a file"
         base_path = Path.cwd()
-        mock_files_path = (
-            base_path.joinpath("pdbe_complexes").joinpath("tests").joinpath("data")
-        )
+        mock_files_path = base_path.joinpath("tests").joinpath("data")
         filename1 = "mock_complexes_mapping.csv"
         filename2 = "mock_complexes_name.csv"
         merge_csv_files(mock_files_path, filename1, filename2)
