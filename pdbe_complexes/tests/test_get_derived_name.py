@@ -1,4 +1,4 @@
-from complexes.utils.get_derived_name import DeriveName
+from pdbe_complexes.utils.get_derived_name import DeriveName
 from unittest import TestCase
 
 test_params_one = {

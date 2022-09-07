@@ -1,5 +1,6 @@
-from complexes import queries as qy
-from complexes.utils import utility as ut
+from pdbe_complexes import queries as qy
+from pdbe_complexes.log import logger
+from pdbe_complexes.utils import utility as ut
 
 PEPTIDE_NAMES = {
     "medium_peptide": {"32630": "synthetic peptide", None: "peptide (unknown source"},
@@ -65,7 +66,7 @@ class GetComplexData:
         self._populate_molecule_names_from_uniprot_or_rfam("rfam")
         self._populate_molecule_names_from_entity()
 
-        print("Start getting PDB Complex Data")
+        logger.info("Start getting PDB Complex Data")
         mappings = ut.run_query(self.neo4j_info, qy.PDB_COMPLEX_QUERY)
         for row in mappings:
 
@@ -161,12 +162,12 @@ class GetComplexData:
                     )
 
                 else:
-                    print("unhandled db type")
+                    logger.info("unhandled db type")
                     continue
 
                 self.pdb_complexes.setdefault(pdb_complex_id, {}).setdefault(
                     "components", []
                 ).append(component)
 
-        print("Done getting PDB Complex Data")
+        logger.info("Done getting PDB Complex Data")
         return self.pdb_complexes

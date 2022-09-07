@@ -1,6 +1,7 @@
-from complexes.utils.get_data_from_graph_db import GetComplexData
 from unittest import TestCase
 from unittest.mock import patch
+
+from pdbe_complexes.utils.get_data_from_graph_db import GetComplexData
 
 mock_uniprot_data = [
     {"accession": "A0A5X7JX66", "description": "Hemin uptake protein HemP"},
@@ -437,28 +438,28 @@ class TestComplexData(TestCase):
         self.password = "mock_password"
         self.bolt_uri = "neo4j://"
 
-    @patch("complexes.utils.utility.run_query")
+    @patch("pdbe_complexes.utils.utility.run_query")
     def test_uniprot_molecule_names(self, rq):
         complex_obj = GetComplexData(self.bolt_uri, self.username, self.password)
         rq.return_value = mock_uniprot_data
         complex_obj._populate_molecule_names_from_uniprot_or_rfam("uniprot")
         self.assertDictEqual(complex_obj.molecule_names, mock_uniprot_molecule_names)
 
-    @patch("complexes.utils.utility.run_query")
+    @patch("pdbe_complexes.utils.utility.run_query")
     def test_rfam_molecule_names(self, rq):
         complex_obj = GetComplexData(self.bolt_uri, self.username, self.password)
         rq.return_value = mock_rfam_data
         complex_obj._populate_molecule_names_from_uniprot_or_rfam("rfam")
         self.assertDictEqual(complex_obj.molecule_names, mock_rfam_molecule_names)
 
-    @patch("complexes.utils.utility.run_query")
+    @patch("pdbe_complexes.utils.utility.run_query")
     def test_entity_molecule_names(self, rq):
         complex_obj = GetComplexData(self.bolt_uri, self.username, self.password)
         rq.return_value = mock_entity_data
         complex_obj._populate_molecule_names_from_entity()
         self.assertDictEqual(complex_obj.molecule_names, mock_entity_molecule_names)
 
-    @patch("complexes.utils.utility.run_query")
+    @patch("pdbe_complexes.utils.utility.run_query")
     def test_get_pdb_complex_data(self, rq):
         complex_obj = GetComplexData(self.bolt_uri, self.username, self.password)
         rq.return_value = mock_pdb_complex_data

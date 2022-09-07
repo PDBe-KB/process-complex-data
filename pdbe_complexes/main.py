@@ -1,7 +1,8 @@
 import argparse
-from complexes.process_complex import Neo4JProcessComplex
-from complexes.get_complex_name import ProcessComplexName
-from complexes.utils import utility as ut
+
+from pdbe_complexes.get_complex_name import ProcessComplexName
+from pdbe_complexes.process_complex import Neo4JProcessComplex
+from pdbe_complexes.utils import utility as ut
 
 
 def main():
@@ -32,25 +33,18 @@ def main():
         "-o",
         "--csv-path",
         required=True,
-        help="Path to output CSV files",
+        help="Path to output CSV file",
     )
 
     parser.add_argument(
-        "-i1",
-        "--molecule-name-path",
+        "-c",
+        "--complex-pdbe-path",
         required=True,
-        help="Path to input CSV file containing manually curated complexes names",
+        help="Path to PDBe complexes ftp site",
     )
 
     parser.add_argument(
-        "-i2",
-        "--molecule-components-path",
-        required=True,
-        help="Path to input CSV file containing manually curated complexes components",
-    )
-
-    parser.add_argument(
-        "-i3",
+        "-i",
         "--complex-portal-path",
         required=True,
         help="Path to Complex Portal ftp site",
@@ -63,6 +57,7 @@ def main():
         username=args.username,
         password=args.password,
         csv_path=args.csv_path,
+        complex_pdbe_path=args.complex_pdbe_path,
     )
     complex.run_process()
 
@@ -71,13 +66,13 @@ def main():
         username=args.username,
         password=args.password,
         csv_path=args.csv_path,
-        molecule_name_path=args.molecule_name_path,
-        molecule_components_path=args.molecule_components_path,
         complex_portal_path=args.complex_portal_path,
     )
     complex.run_process()
 
     ut.merge_csv_files(args.csv_path)
+    ut.clean_files(args.csv_path)
+    ut.copy_file(args.csv_path, args.complex_pdbe_path)
 
 
 if __name__ == "__main__":

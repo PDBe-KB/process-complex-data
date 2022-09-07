@@ -1,6 +1,7 @@
-from complexes.process_complex import Neo4JProcessComplex
 from unittest import TestCase
 from unittest.mock import patch
+
+from pdbe_complexes.process_complex import Neo4JProcessComplex
 
 mock_complex_portal_data = [
     {
@@ -128,11 +129,16 @@ class TestProcessComplex(TestCase):
         self.password = "mock_password"
         self.bolt_uri = "neo4j://"
         self.csv_path = "test_path"
+        self.reference_mapping = "test_mapping"
 
-    @patch("complexes.utils.utility.run_query")
+    @patch("pdbe_complexes.utils.utility.run_query")
     def test_get_complex_portal_data(self, rq):
         complex_obj = Neo4JProcessComplex(
-            self.bolt_uri, self.username, self.password, self.csv_path
+            self.bolt_uri,
+            self.username,
+            self.password,
+            self.csv_path,
+            self.reference_mapping,
         )
         rq.return_value = mock_complex_portal_data
         # print(rq.return_value)
@@ -146,10 +152,14 @@ class TestProcessComplex(TestCase):
             complex_obj.dict_complex_portal_entries, mock_dict_complex_portal_entries
         )
 
-    @patch("complexes.utils.utility.run_query")
+    @patch("pdbe_complexes.utils.utility.run_query")
     def test_process_pdb_assembly_data(self, rq):
         complex_obj = Neo4JProcessComplex(
-            self.bolt_uri, self.username, self.password, self.csv_path
+            self.bolt_uri,
+            self.username,
+            self.password,
+            self.csv_path,
+            self.reference_mapping,
         )
         rq.return_value = mock_pdb_assembly_data
         # print(rq.return_value)
@@ -160,11 +170,15 @@ class TestProcessComplex(TestCase):
         #     complex_obj.dict_complex_portal_entries, mock_dict_complex_portal_entries
         # )
 
-    @patch("complexes.utils.utility.run_query")
+    @patch("pdbe_complexes.utils.utility.run_query")
     def test_use_persistent_identifier(self, rq):
         # Test whether the method return the correct pdb_complex_id based on mock data
         complex_obj = Neo4JProcessComplex(
-            self.bolt_uri, self.username, self.password, self.csv_path
+            self.bolt_uri,
+            self.username,
+            self.password,
+            self.csv_path,
+            self.reference_mapping,
         )
         rq.return_value = mock_pdb_assembly_data
         complex_obj.process_assembly_data()

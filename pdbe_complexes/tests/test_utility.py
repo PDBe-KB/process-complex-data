@@ -1,5 +1,5 @@
-from complexes.utils.utility import run_query, merge_csv_files, export_csv
-from complexes.constants import complex_mapping_headers as csv_headers
+from pdbe_complexes.utils.utility import run_query, merge_csv_files, export_csv
+from pdbe_complexes.constants import complex_mapping_headers as csv_headers
 from unittest import TestCase
 from unittest.mock import patch
 import os
@@ -40,7 +40,7 @@ class TestUtility(TestCaseBase):
         self.bolt_uri = "neo4j://"
         self.query = "mock_query"
 
-    @patch("complexes.utils.utility.Graph.run")
+    @patch("pdbe_complexes.utils.utility.Graph.run")
     def test_run_query(self, mock):
         mock.return_value = True
         db_info = (self.bolt_uri, self.username, self.password)
@@ -51,7 +51,7 @@ class TestUtility(TestCaseBase):
         "Test if the merge_csv_files method creates a file"
         base_path = Path.cwd()
         mock_files_path = (
-            base_path.joinpath("complexes").joinpath("tests").joinpath("data")
+            base_path.joinpath("pdbe_complexes").joinpath("tests").joinpath("data")
         )
         filename1 = "mock_complexes_mapping.csv"
         filename2 = "mock_complexes_name.csv"
@@ -67,7 +67,7 @@ class TestUtility(TestCaseBase):
         "Test if the export_csv method creates a file"
         base_path = Path.cwd()
         output_file_path = (
-            base_path.joinpath("complexes").joinpath("tests").joinpath("data")
+            base_path.joinpath("pdbe_complexes").joinpath("tests").joinpath("data")
         )
         filename = "mock_complexes_mapping_example.csv"
         export_csv(mock_data, "md5_obj", csv_headers, output_file_path, filename)

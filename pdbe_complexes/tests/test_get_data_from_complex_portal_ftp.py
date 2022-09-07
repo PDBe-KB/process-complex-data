@@ -1,4 +1,4 @@
-from complexes.utils.get_data_from_complex_portal_ftp import GetComplexPortalData
+from pdbe_complexes.utils.get_data_from_complex_portal_ftp import GetComplexPortalData
 from unittest import TestCase
 from unittest.mock import patch
 
@@ -83,14 +83,14 @@ class TestGetComplexPortalData(TestCase):
         )
 
     @patch(
-        "complexes.utils.get_data_from_complex_portal_ftp.GetComplexPortalData._get_data",
+        "pdbe_complexes.utils.get_data_from_complex_portal_ftp.GetComplexPortalData._get_data",
         side_effect=[[1, 2], [3, 4], [5, 6], [7, 8]],
     )
     @patch(
-        "complexes.utils.get_data_from_complex_portal_ftp.GetComplexPortalData._create_component_string"  # noqa
+        "pdbe_complexes.utils.get_data_from_complex_portal_ftp.GetComplexPortalData._create_component_string"  # noqa
     )
     @patch(
-        "complexes.utils.get_data_from_complex_portal_ftp.GetComplexPortalData._create_component_name_dict"  # noqa
+        "pdbe_complexes.utils.get_data_from_complex_portal_ftp.GetComplexPortalData._create_component_name_dict"  # noqa
     )
     def test_run_process(self, mock1, mock2, mock3):
         """

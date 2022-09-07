@@ -1,29 +1,11 @@
 from unittest import TestCase
-import os
 
-from complexes.utils.get_annotated_name import GetAnnotatedName
-
-
-stub_data = [
-    {
-        "complex_number": "1",
-        "PDB101-name": "AAA+ proteases",
-        "Source organism": "Haemophilus influenzae",
-        "pdbid": "1g3i",
-        "…mer": "24",
-        "none1": "",
-        "note": "1yyf - hetero 24mer, A,B P0A6H5, C,D P39070",
-        "": "",
-    }
-]
+from pdbe_complexes.utils.get_annotated_name import GetAnnotatedName
 
 
 class TestGetAnnotatedName(TestCase):
     def setUp(self) -> None:
-        self.gan = GetAnnotatedName(
-            os.path.join("complexes", "tests", "data", "complexes_molecules.csv"),
-            os.path.join("complexes", "tests", "data", "complexes_components.csv"),
-        )
+        self.gan = GetAnnotatedName()
 
     def test_get_data(self):
         self.gan.get_data()
