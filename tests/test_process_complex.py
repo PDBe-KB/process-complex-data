@@ -129,7 +129,6 @@ class TestProcessComplex(TestCase):
         self.password = "mock_password"
         self.bolt_uri = "neo4j://"
         self.csv_path = "test_path"
-        self.reference_mapping = "test_mapping"
 
     @patch("pdbe_complexes.utils.utility.run_query")
     def test_get_complex_portal_data(self, rq):
@@ -138,7 +137,6 @@ class TestProcessComplex(TestCase):
             self.username,
             self.password,
             self.csv_path,
-            self.reference_mapping,
         )
         rq.return_value = mock_complex_portal_data
         # print(rq.return_value)
@@ -159,7 +157,6 @@ class TestProcessComplex(TestCase):
             self.username,
             self.password,
             self.csv_path,
-            self.reference_mapping,
         )
         rq.return_value = mock_pdb_assembly_data
         # print(rq.return_value)
@@ -178,7 +175,6 @@ class TestProcessComplex(TestCase):
             self.username,
             self.password,
             self.csv_path,
-            self.reference_mapping,
         )
         rq.return_value = mock_pdb_assembly_data
         complex_obj.process_assembly_data()

@@ -37,13 +37,6 @@ def main():
     )
 
     parser.add_argument(
-        "-c",
-        "--complex-pdbe-path",
-        required=True,
-        help="Path to PDBe complexes ftp site",
-    )
-
-    parser.add_argument(
         "-i",
         "--complex-portal-path",
         required=True,
@@ -57,7 +50,6 @@ def main():
         username=args.username,
         password=args.password,
         csv_path=args.csv_path,
-        complex_pdbe_path=args.complex_pdbe_path,
     )
     complex.run_process()
 
@@ -72,7 +64,6 @@ def main():
 
     ut.merge_csv_files(args.csv_path)
     ut.clean_files(args.csv_path)
-    ut.copy_file(args.csv_path, args.complex_pdbe_path)
 
 
 if __name__ == "__main__":
