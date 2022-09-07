@@ -65,9 +65,7 @@ class TestUtility(TestCaseBase):
     def test_export_csv(self):
         "Test if the export_csv method creates a file"
         base_path = Path.cwd()
-        output_file_path = (
-            base_path.joinpath("pdbe_complexes").joinpath("tests").joinpath("data")
-        )
+        output_file_path = base_path.joinpath("tests").joinpath("data")
         filename = "mock_complexes_mapping_example.csv"
         export_csv(mock_data, "md5_obj", csv_headers, output_file_path, filename)
         path = Path(output_file_path.joinpath(filename))
