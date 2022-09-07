@@ -15,9 +15,11 @@ class Neo4JProcessComplex:
     and to create persistent, unique complex identifiers
     """
 
-    def __init__(self, bolt_uri, username, password, csv_path):
+    def __init__(self, bolt_uri, username, password, csv_path, complex_pdbe_path):
+
         self.neo4j_info = (bolt_uri, username, password)
         self.csv_path = csv_path
+        self.reference_mapping_path = complex_pdbe_path
         self.dict_complex_portal_id = {}
         self.dict_complex_portal_entries = {}
         self.dict_pdb_complex = {}
@@ -61,7 +63,7 @@ class Neo4JProcessComplex:
         Returns:
             none
         """
-        logger.info("Querying Complex Portal data")
+        logger.info("Start querying Complex Portal data")
         mappings = ut.run_query(self.neo4j_info, qy.COMPLEX_PORTAL_DATA_QUERY)
         for row in mappings:
             accessions = row.get("uniq_accessions")
@@ -69,6 +71,7 @@ class Neo4JProcessComplex:
             entries = row.get("entries_str")
             self.dict_complex_portal_id[accessions] = complex_id
             self.dict_complex_portal_entries[complex_id] = entries
+        logger.info("Done querying Complex Portal data")
 
     def drop_PDBComplex_nodes(self):
         """
@@ -85,7 +88,10 @@ class Neo4JProcessComplex:
             reference_filename (str, optional): Reference mapping file. Defaults to
                                                 "complexes_master.csv".
         """
-        complete_filepath = os.path.join(self.csv_path, reference_filename)
+        logger.info("Start reading reference information")
+        complete_filepath = os.path.join(
+            self.reference_mapping_path, reference_filename
+        )
         if os.path.exists(complete_filepath):
             with open(complete_filepath) as csvfile:
                 reader = csv.DictReader(csvfile)
@@ -102,7 +108,7 @@ class Neo4JProcessComplex:
         Aggregate unique complex compositions from PDB data, compares them to
         Complex Portal data and processes them for use later.
         """
-        logger.info("Querying PDB Assembly data")
+        logger.info("Start querying PDB Assembly data")
         mappings = ut.run_query(self.neo4j_info, qy.PDB_ASSEMBLY_DATA_QUERY)
         for row in mappings:
             self._process_mapping(row)
