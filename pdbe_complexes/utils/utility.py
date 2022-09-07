@@ -1,6 +1,5 @@
 import csv
 import os
-import shutil
 
 import pandas as pd
 from py2neo import Graph
@@ -66,18 +65,18 @@ def run_query(neo4j_info, query, param=None):
         return graph.run(query)
 
 
-def copy_file(src, dst=None, filename="complexes_master.csv"):
-    """
-    Utility function to copy file from one location to another
+# def copy_file(src, dst=None, filename="complexes_master.csv"):
+#     """
+#     Utility function to copy file from one location to another
 
-    Args:
-        src (str): source path
-        dst (str, optional): target path. Defaults to None.
-    """
-    source_filepath = os.path.join(src, filename)
-    if dst:
-        shutil.copy2(source_filepath, dst)
-        logger.info(f"Filename {filename} has been copied to {dst}")
+#     Args:
+#         src (str): source path
+#         dst (str, optional): target path. Defaults to None.
+#     """
+#     source_filepath = os.path.join(src, filename)
+#     if dst:
+#         shutil.copy2(source_filepath, dst)
+#         logger.info(f"Filename {filename} has been copied to {dst}")
 
 
 def merge_csv_files(
