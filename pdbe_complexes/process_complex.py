@@ -15,11 +15,10 @@ class Neo4JProcessComplex:
     and to create persistent, unique complex identifiers
     """
 
-    def __init__(self, bolt_uri, username, password, csv_path, complex_pdbe_path):
+    def __init__(self, bolt_uri, username, password, csv_path):
 
         self.neo4j_info = (bolt_uri, username, password)
         self.csv_path = csv_path
-        self.reference_mapping_path = complex_pdbe_path
         self.dict_complex_portal_id = {}
         self.dict_complex_portal_entries = {}
         self.dict_pdb_complex = {}
@@ -89,9 +88,7 @@ class Neo4JProcessComplex:
                                                 "complexes_master.csv".
         """
         logger.info("Start reading reference information")
-        complete_filepath = os.path.join(
-            self.reference_mapping_path, reference_filename
-        )
+        complete_filepath = os.path.join(self.csv_path, reference_filename)
         if os.path.exists(complete_filepath):
             with open(complete_filepath) as csvfile:
                 reader = csv.DictReader(csvfile)
