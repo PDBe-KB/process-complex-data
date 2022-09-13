@@ -1,9 +1,10 @@
 from collections import Counter, OrderedDict
 
-from pdbe_complexes.constants import complex_name_headers as csv_headers
+# from pdbe_complexes.constants import complex_name_headers as csv_headers
 from pdbe_complexes.constants import name_exclude_list
 from pdbe_complexes.log import logger
-from pdbe_complexes.utils import utility as ut
+
+# from pdbe_complexes.utils import utility as ut
 from pdbe_complexes.utils.get_annotated_name import GetAnnotatedName
 from pdbe_complexes.utils.get_data_from_complex_portal_ftp import GetComplexPortalData
 from pdbe_complexes.utils.get_data_from_graph_db import GetComplexData
@@ -90,15 +91,16 @@ class ProcessComplexName:
 
     def run_process(self):
         self._get_complex_portal_entries()
-        self._get_pdb_complex_entries()
-        self._process_complex_names()
-        ut.export_csv(
-            self.complex_data_dict,
-            "pdb_complex_id",
-            csv_headers,
-            self.csv_path,
-            "complexes_name.csv",
-        )
+        print(self.complex_portal_dict)
+        # self._get_pdb_complex_entries()
+        # self._process_complex_names()
+        # ut.export_csv(
+        #     self.complex_data_dict,
+        #     "pdb_complex_id",
+        #     csv_headers,
+        #     self.csv_path,
+        #     "complexes_name.csv",
+        # )
 
     def _get_complex_portal_entries(self):
         """
@@ -644,3 +646,14 @@ class ProcessComplexName:
             self.other_polymer_components.append(polymer_type)
         if name:
             self.names.append(name)
+
+
+if __name__ == "__main__":
+    cn = ProcessComplexName(
+        "bolt://wp-np2-3d.ebi.ac.uk:7687 ",
+        "neo4j",
+        "pdbe_neo",
+        "/Users/sria/desktop",
+        "/pub/databases/IntAct/current/various/complex2pdb/",
+    )
+    cn.run_process()
