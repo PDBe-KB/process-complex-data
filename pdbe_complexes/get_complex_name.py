@@ -358,7 +358,7 @@ class ProcessComplexName:
                 self.derived_complex_name_list.append(potential_name)
         return found_match
 
-    def _check_trna(self):
+    def _check_if_trna(self):
         """
         Checks whether the complex has tRNA
         """
@@ -413,7 +413,7 @@ class ProcessComplexName:
         self.pdb_entries = []
         self.complex_portal_id = None
         self.unp_only_complex_portal_id = None
-        derived_complex_name = ""
+        # derived_complex_name = ""
         self.complex_name_type = ""
         components = self.complex_data[complex_id].get("components", [])
 
@@ -426,12 +426,93 @@ class ProcessComplexName:
         # get a name for the complex
         complex_name = self._get_complex_name()
         # # check annotated names
-        if not complex_name and self.unp_only_components:
-            potential_name = self.check_annotated_name()
-            if potential_name:
-                complex_name = potential_name
-                self.complex_name_type = "PDBe curated"
+        complex_name = self.get_name_from_PDBe_curated(complex_name)
         # check partial mapping to complex portal
+        complex_name = self.get_name_from_Complex_Portal_with_partial_mapping(
+            complex_name
+        )
+        # common complexes identified by GO
+        if not complex_name:
+            found_match = self._check_go()
+            if found_match:
+                self.complex_name_type = "GO"
+
+            # ribosome
+            self.check_if_ribosome(complex_id, found_match)
+
+            """
+            protein complexes which haven't got a name elsewhere
+            and are all subunits or chains
+            """
+            self.check_if_protein_complex_without_name()
+
+            # two protein complexes which haven't got a name elsewhere
+            self.check_if_heterodimer()
+        # check for tRNA
+        self._check_if_trna()
+        # join the names together to produce the final derived name
+        derived_complex_name = self.build_derived_name()
+        derived_complex_name, complex_name = self.format_names(
+            derived_complex_name, complex_name
+        )
+        self.complex_data_dict[complex_id] = {
+            "complex_name": complex_name,
+            "derived_complex_name": derived_complex_name,
+            "complex_name_type": self.complex_name_type,
+        }
+
+    def format_names(self, derived_complex_name, complex_name):
+        if complex_name:
+            complex_name = str(complex_name).strip()
+        if derived_complex_name:
+            derived_complex_name = str(derived_complex_name).strip()
+        return derived_complex_name, complex_name
+
+    def build_derived_name(self):
+        derived_complex_name = ""
+        if self.derived_complex_name_list:
+            if self.rna_no_accession:
+                self.derived_complex_name_list.append("RNA")
+            if self.dna_polymer_components:
+                self.derived_complex_name_list.append("DNA")
+            derived_complex_name = " and ".join(self.derived_complex_name_list)
+        return derived_complex_name
+
+    def check_if_heterodimer(self):
+        if (
+            not self.derived_complex_name_list
+            and self.all_protein_unp
+            and len(self.unp_names) == 2
+        ):
+            self.derived_complex_name_list.extend(list(self.unp_names))
+            self.complex_name_type = "heterodimer"
+
+    def check_if_protein_complex_without_name(self):
+        if not self.derived_complex_name_list and self.all_protein_unp:
+            if self.name_counter:
+                num_unp_components = len(self.unp_only_components)
+                test_list = [
+                    k for k, v in self.name_counter.items() if v == num_unp_components
+                ]
+                if len(test_list) > 1:
+                    self.derived_complex_name_list.append(" ".join(test_list))
+                    self.complex_name_type = "common name from entity names"
+
+    def check_if_ribosome(self, complex_id, found_match):
+        if (
+            not found_match
+            and self.unp_name_and_accession
+            and self.rna_polymer_components
+        ):
+            logger.debug("finding potential name for {}".format(complex_id))
+            potential_name = self._check_ribosome()
+
+            if potential_name:
+                logger.debug(potential_name)
+                self.derived_complex_name_list.append(potential_name)
+                self.complex_name_type = "ribosome"
+
+    def get_name_from_Complex_Portal_with_partial_mapping(self, complex_name):
         if not complex_name and self.unp_only_components:
             self.partial_mapping_to_complex_portal = (
                 self._get_partial_complex_portal_mapping()
@@ -444,74 +525,15 @@ class ProcessComplexName:
                 if potential_name_list:
                     self.derived_complex_name_list.extend(potential_name_list)
                     self.complex_name_type = "complex portal super-complex"
-        # common complexes identified by GO
-        if not complex_name:
-            found_match = self._check_go()
-            if found_match:
-                self.complex_name_type = "GO"
+        return complex_name
 
-            # ribosome
-            if (
-                not found_match
-                and self.unp_name_and_accession
-                and self.rna_polymer_components
-            ):
-                logger.debug("finding potential name for {}".format(complex_id))
-                potential_name = self._check_ribosome()
-
-                if potential_name:
-                    logger.debug(potential_name)
-                    self.derived_complex_name_list.append(potential_name)
-                    self.complex_name_type = "ribosome"
-
-            """
-            protein complexes which haven't got a name elsewhere
-            and are all "subunits" or "chains
-            """
-            if not self.derived_complex_name_list and self.all_protein_unp:
-                if self.name_counter:
-                    num_unp_components = len(self.unp_only_components)
-                    test_list = [
-                        k
-                        for k, v in self.name_counter.items()
-                        if v == num_unp_components
-                    ]
-                    if len(test_list) > 1:
-                        self.derived_complex_name_list.append(" ".join(test_list))
-                        self.complex_name_type = "common name from entity names"
-
-            # two protein complexes which haven't got a name elsewhere
-            if (
-                not self.derived_complex_name_list
-                and self.all_protein_unp
-                and len(self.unp_names) == 2
-            ):
-                self.derived_complex_name_list.extend(list(self.unp_names))
-                self.complex_name_type = "heterodimer"
-        # check for tRNA
-        self._check_trna()
-        # join the names together to produce the final derived name
-        if self.derived_complex_name_list:
-            if self.rna_no_accession:
-                self.derived_complex_name_list.append("RNA")
-            if self.dna_polymer_components:
-                self.derived_complex_name_list.append("DNA")
-            derived_complex_name = " and ".join(self.derived_complex_name_list)
-        if complex_name:
-            complex_name = str(complex_name).strip()
-        if derived_complex_name:
-            derived_complex_name = str(derived_complex_name).strip()
-        """
-                    if len(self.components) == 1:
-                        homo_hetero = "Homo"
-                    else:
-                        homo_hetero = "Hetero"
-                    """
-        self.complex_data_dict[complex_id] = {
-            "complex_name": complex_name,
-            "derived_complex_name": derived_complex_name,
-            "complex_name_type": self.complex_name_type,
-        }
+    def get_name_from_PDBe_curated(self, complex_name):
+        if not complex_name and self.unp_only_components:
+            potential_name = self.check_annotated_name()
+            if potential_name:
+                complex_name = potential_name
+                self.complex_name_type = "PDBe curated"
+        return complex_name
 
     def _process_go_terms(self):
         for go_term in self.go_terms:
