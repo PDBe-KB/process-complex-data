@@ -425,14 +425,14 @@ class ProcessComplexName:
         self._process_go_terms()
         # get a name for the complex
         complex_name = self._get_complex_name()
-        # # check annotated names
+        # check annotated names
         complex_name = self.get_name_from_PDBe_curated(complex_name)
         # check partial mapping to complex portal
         complex_name = self.get_name_from_Complex_Portal_with_partial_mapping(
             complex_name
         )
-        # common complexes identified by GO
         if not complex_name:
+
             found_match = self._check_go()
             if found_match:
                 self.complex_name_type = "GO"
