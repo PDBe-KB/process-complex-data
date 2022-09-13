@@ -1,10 +1,9 @@
 from collections import Counter, OrderedDict
 
-# from pdbe_complexes.constants import complex_name_headers as csv_headers
+from pdbe_complexes.constants import complex_name_headers as csv_headers
 from pdbe_complexes.constants import name_exclude_list
 from pdbe_complexes.log import logger
-
-# from pdbe_complexes.utils import utility as ut
+from pdbe_complexes.utils import utility as ut
 from pdbe_complexes.utils.get_annotated_name import GetAnnotatedName
 from pdbe_complexes.utils.get_data_from_complex_portal_ftp import GetComplexPortalData
 from pdbe_complexes.utils.get_data_from_graph_db import GetComplexData
@@ -91,16 +90,16 @@ class ProcessComplexName:
 
     def run_process(self):
         self._get_complex_portal_entries()
-        print(self.complex_portal_dict)
-        # self._get_pdb_complex_entries()
-        # self._process_complex_names()
-        # ut.export_csv(
-        #     self.complex_data_dict,
-        #     "pdb_complex_id",
-        #     csv_headers,
-        #     self.csv_path,
-        #     "complexes_name.csv",
-        # )
+        # print(self.complex_portal_dict)
+        self._get_pdb_complex_entries()
+        self._process_complex_names()
+        ut.export_csv(
+            self.complex_data_dict,
+            "pdb_complex_id",
+            csv_headers,
+            self.csv_path,
+            "complexes_name.csv",
+        )
 
     def _get_complex_portal_entries(self):
         """
@@ -571,16 +570,9 @@ class ProcessComplexName:
         pdb_entity = row.get("pdb_entity", "")
         stoichiometry = row.get("stoichiometry", 0)
         # entity_length = row.get("entity_length")
-        if not stoichiometry:
-            stoichiometry = 0
-        self.stoichiometry_count += int(stoichiometry)
-        monomer = True
-        if stoichiometry:
-            if int(stoichiometry) > 1:
-                monomer = False
-        if complex_id in self.monomer_data:
-            monomer = False
-        self.monomer_data[complex_id] = monomer
+        stoichiometry = self.get_stoichiometry_number(stoichiometry)
+        is_monomer = self.validate_monomer(complex_id, stoichiometry)
+        self.monomer_data[complex_id] = is_monomer
         uniq_id = accession if accession else polymer_type
         self.components.append(uniq_id)
         if tax_id:
@@ -595,51 +587,19 @@ class ProcessComplexName:
             self.non_unp_polymer_components.append(component)
         if polymer_type == "PROTEIN":
             if database == "UNP":
-                self.unp_only_components.append(component)
-                self.unp_only_components_no_stoch.append(accession)
-                self.individual_unp_component_dict.setdefault(accession, set()).add(
-                    complex_id
+                self.group_UNP_data(
+                    complex_id, accession, name, stoichiometry, component
                 )
-                self.unp_components_with_stoch_dict[accession] = int(stoichiometry)
-                self.unp_names.add(name)
-
-                name_list = name.split(" ")
-                # check the name has a name like "subunit" etc...
-                if [x for x in name_list if x.lower() in name_exclude_list]:
-                    for sub_name in name_list:
-                        if sub_name.lower() not in name_exclude_list:
-                            self.name_counter[sub_name] += 1
-                component_go_terms = self.unp_component_dict.get(accession, [])
-                self.unp_name_and_accession[accession] = {
-                    "name": name,
-                    "go_terms": component_go_terms,
-                }
-                for go_term in component_go_terms:
-                    self.go_terms.setdefault(go_term, []).append(accession)
             elif is_antibody:
-                self.antibody_components.append(name)
-                # update the name with the name of the antibody
-                name = self.antibody_names.get(pdb_entity, name)
-            elif self.prd_names.get(pdb_entity):
-                name = self.prd_names.get(pdb_entity)
-                self.prd_components.append(name)
-            elif name in (
-                "peptide",
-                "short peptide",
-                "synthetic peptide",
-                "synthetic short peptide",
-            ):
-                self.peptide_components.append(component)
-                self.peptide_components_names.append(name)
+                self.group_antibody_data(name, pdb_entity)
+            elif self.is_prd(pdb_entity):
+                self.group_prd_data(pdb_entity)
+            elif self.is_peptide(name):
+                self.group_peptide_data(name, component)
             else:
-                self.other_protein_components.append(component)
-                self.other_protein_components_names.add(name)
+                self.group_other_protein_data(name, component)
         elif polymer_type == "RNA":
-            self.rna_polymer_components.append(component)
-            if database == "Rfam":
-                self.rna_polymer_accessions.append(accession)
-            else:
-                self.rna_no_accession.append(component)
+            self.group_RNA_data(database, accession, component)
         elif polymer_type == "DNA":
             self.dna_polymer_components.append(component)
         else:
@@ -647,13 +607,77 @@ class ProcessComplexName:
         if name:
             self.names.append(name)
 
+    def validate_monomer(self, complex_id, stoichiometry):
+        monomer = True
+        if stoichiometry:
+            if int(stoichiometry) > 1:
+                monomer = False
+        if complex_id in self.monomer_data:
+            monomer = False
+        return monomer
 
-if __name__ == "__main__":
-    cn = ProcessComplexName(
-        "bolt://wp-np2-3d.ebi.ac.uk:7687 ",
-        "neo4j",
-        "pdbe_neo",
-        "/Users/sria/desktop",
-        "/pub/databases/IntAct/current/various/complex2pdb/",
-    )
-    cn.run_process()
+    def get_stoichiometry_number(self, stoichiometry):
+        if not stoichiometry:
+            stoichiometry = 0
+        self.stoichiometry_count += int(stoichiometry)
+        return stoichiometry
+
+    def is_peptide(self, name):
+        return name in (
+            "peptide",
+            "short peptide",
+            "synthetic peptide",
+            "synthetic short peptide",
+        )
+
+    def is_prd(self, pdb_entity):
+        return self.prd_names.get(pdb_entity)
+
+    def group_RNA_data(self, database, accession, component):
+        self.rna_polymer_components.append(component)
+        if database == "Rfam":
+            self.rna_polymer_accessions.append(accession)
+        else:
+            self.rna_no_accession.append(component)
+
+    def group_other_protein_data(self, name, component):
+        self.other_protein_components.append(component)
+        self.other_protein_components_names.add(name)
+
+    def group_peptide_data(self, name, component):
+        self.peptide_components.append(component)
+        self.peptide_components_names.append(name)
+
+    def group_prd_data(self, pdb_entity):
+        name = self.prd_names.get(pdb_entity)
+        self.prd_components.append(name)
+        # return name
+
+    def group_antibody_data(self, name, pdb_entity):
+        self.antibody_components.append(name)
+        # update the name with the name of the antibody
+        name = self.antibody_names.get(pdb_entity, name)
+
+    def group_UNP_data(self, complex_id, accession, name, stoichiometry, component):
+        self.unp_only_components.append(component)
+        self.unp_only_components_no_stoch.append(accession)
+        self.individual_unp_component_dict.setdefault(accession, set()).add(complex_id)
+        self.unp_components_with_stoch_dict[accession] = int(stoichiometry)
+        self.unp_names.add(name)
+
+        name_list = name.split(" ")
+        # check the name has a name like "subunit" etc...
+        self.check_excluded_names(name_list)
+        component_go_terms = self.unp_component_dict.get(accession, [])
+        self.unp_name_and_accession[accession] = {
+            "name": name,
+            "go_terms": component_go_terms,
+        }
+        for go_term in component_go_terms:
+            self.go_terms.setdefault(go_term, []).append(accession)
+
+    def check_excluded_names(self, name_list):
+        if [x for x in name_list if x.lower() in name_exclude_list]:
+            for sub_name in name_list:
+                if sub_name.lower() not in name_exclude_list:
+                    self.name_counter[sub_name] += 1
