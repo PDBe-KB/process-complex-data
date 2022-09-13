@@ -266,55 +266,90 @@ class ProcessComplexName:
         """
         complex_name = self._get_complex_portal_name()
         if complex_name:
-            logger.debug(complex_name)
+            # logger.debug(complex_name)
             self.complex_name_type = "complex portal"
         elif len(self.unp_names) == 1 and self.all_protein_unp:
-            complex_name = "".join(self.unp_names)
-            self.complex_name_type = "protein name from UniProt"
+            complex_name = self.get_protein_name_from_Uniprot()
             if self.rna_polymer_components:
-                complex_name = complex_name + " and RNA"
-                self.complex_name_type = "protein name from UniProt and RNA"
+                complex_name = self.get_protein_name_from_Uniprot_with_RNA(complex_name)
             if self.dna_polymer_components:
-                complex_name = complex_name + " and DNA"
-                self.complex_name_type = "protein name from UniProt and DNA"
+                complex_name = self.get_protein_name_from_Uniprot_with_DNA(complex_name)
         elif len(self.pdb_entries) == 1:
             if len(self.unp_names) == 1 and not self.all_protein_unp:
-                complex_names = []
-                complex_names.extend(self.unp_names)
-                additional_names = ["UniProt"]
-                if self.antibody_components:
-                    complex_names.extend(self.antibody_components)
-                    additional_names.append("antibody")
-                if self.prd_components:
-                    complex_names.extend(self.prd_components)
-                    additional_names.append("PRD")
-                if self.peptide_components:
-                    complex_names.append("peptide")
-                    additional_names.append("peptide")
-                complex_name = " and ".join(complex_names)
-                self.complex_name_type = "protein name from {}".format(
-                    " and ".join(additional_names)
+                complex_name = (
+                    self.get_protein_name_from_Uniprot_with_additional_protein_factors()
                 )
             if set(self.polymers) == {"PROTEIN"} and len(self.components) == 1:
-                pdbid_assembly = self.pdb_entries[0]
-                pdbid = pdbid_assembly.split("_")[0]
-                protein_entities = self.pdb_descriptions.get(pdbid, {})
-                entity_names = set()
-                for entity in protein_entities:
-                    entity_names.add(protein_entities[entity])
-                if entity_names:
-                    complex_name = ",".join(entity_names)
-                    self.complex_name_type = "protein name from entry"
+                complex_name = self.get_protein_name_from_PDB_entry()
         elif set(self.polymers) == {"DNA"}:
-            complex_name = "DNA"
-            self.complex_name_type = "DNA"
+            complex_name = self.get_general_DNA_name()
         elif set(self.polymers) == {"RNA"}:
-            complex_name = "RNA"
-            self.complex_name_type = "RNA"
+            complex_name = self.get_general_RNA_name()
         elif sorted(set(self.polymers)) == {"DNA", "RNA"}:
-            complex_name = "DNA and RNA"
-            self.complex_name_type = "DNA and RNA"
+            complex_name = self.get_general_hybrid_nucleic_acid_name()
 
+        return complex_name
+
+    def get_general_hybrid_nucleic_acid_name(self):
+        complex_name = "DNA and RNA"
+        self.complex_name_type = "DNA and RNA"
+        return complex_name
+
+    def get_general_RNA_name(self):
+        complex_name = "RNA"
+        self.complex_name_type = "RNA"
+        return complex_name
+
+    def get_general_DNA_name(self):
+        complex_name = "DNA"
+        self.complex_name_type = "DNA"
+        return complex_name
+
+    def get_protein_name_from_PDB_entry(self):
+        complex_name = ""
+        pdbid_assembly = self.pdb_entries[0]
+        pdbid = pdbid_assembly.split("_")[0]
+        protein_entities = self.pdb_descriptions.get(pdbid, {})
+        entity_names = set()
+        for entity in protein_entities:
+            entity_names.add(protein_entities[entity])
+        if entity_names:
+            complex_name = ",".join(entity_names)
+            self.complex_name_type = "protein name from entry"
+        return complex_name
+
+    def get_protein_name_from_Uniprot_with_additional_protein_factors(self):
+        complex_names = []
+        complex_names.extend(self.unp_names)
+        additional_names = ["UniProt"]
+        if self.antibody_components:
+            complex_names.extend(self.antibody_components)
+            additional_names.append("antibody")
+        if self.prd_components:
+            complex_names.extend(self.prd_components)
+            additional_names.append("PRD")
+        if self.peptide_components:
+            complex_names.append("peptide")
+            additional_names.append("peptide")
+        complex_name = " and ".join(complex_names)
+        self.complex_name_type = "protein name from {}".format(
+            " and ".join(additional_names)
+        )
+        return complex_name
+
+    def get_protein_name_from_Uniprot(self):
+        complex_name = "".join(self.unp_names)
+        self.complex_name_type = "protein name from UniProt"
+        return complex_name
+
+    def get_protein_name_from_Uniprot_with_DNA(self, complex_name):
+        complex_name = complex_name + " and DNA"
+        self.complex_name_type = "protein name from UniProt and DNA"
+        return complex_name
+
+    def get_protein_name_from_Uniprot_with_RNA(self, complex_name):
+        complex_name = complex_name + " and RNA"
+        self.complex_name_type = "protein name from UniProt and RNA"
         return complex_name
 
     def _check_ribosome(self):
@@ -613,9 +648,9 @@ class ProcessComplexName:
                     complex_id, accession, name, stoichiometry, component
                 )
             elif is_antibody:
-                self.group_antibody_data(name, pdb_entity)
+                name = self.group_antibody_data(name, pdb_entity)
             elif self.is_prd(pdb_entity):
-                self.group_prd_data(pdb_entity)
+                name = self.group_prd_data(pdb_entity)
             elif self.is_peptide(name):
                 self.group_peptide_data(name, component)
             else:
@@ -673,12 +708,12 @@ class ProcessComplexName:
     def group_prd_data(self, pdb_entity):
         name = self.prd_names.get(pdb_entity)
         self.prd_components.append(name)
-        # return name
+        return name
 
     def group_antibody_data(self, name, pdb_entity):
-        self.antibody_components.append(name)
-        # update the name with the name of the antibody
         name = self.antibody_names.get(pdb_entity, name)
+        self.antibody_components.append(name)
+        return name
 
     def group_UNP_data(self, complex_id, accession, name, stoichiometry, component):
         self.unp_only_components.append(component)
