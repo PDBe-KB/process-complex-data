@@ -688,11 +688,9 @@ class ProcessComplexName:
                     complex_id, accession, name, stoichiometry, component
                 )
             elif is_antibody:
-                name = self._group_antibody_data(name, pdb_entity)
-            # Need to recheck
+                self._group_antibody_data(name, pdb_entity)
             elif self._is_prd(pdb_entity):
-                name = self._group_prd_data(pdb_entity)
-            # Need to recheck
+                self._group_prd_data(pdb_entity)
             elif self._is_peptide(name):
                 self._group_peptide_data(name, component)
             else:
@@ -708,9 +706,8 @@ class ProcessComplexName:
 
     def _validate_monomer(self, complex_id, stoichiometry):
         monomer = True
-        if stoichiometry:
-            if int(stoichiometry) > 1:
-                monomer = False
+        if stoichiometry and int(stoichiometry) > 1:
+            monomer = False
         if complex_id in self.monomer_data:
             monomer = False
         return monomer
@@ -750,12 +747,10 @@ class ProcessComplexName:
     def _group_prd_data(self, pdb_entity):
         name = self.prd_names.get(pdb_entity)
         self.prd_components.append(name)
-        return name
 
     def _group_antibody_data(self, name, pdb_entity):
         name = self.antibody_names.get(pdb_entity, name)
         self.antibody_components.append(name)
-        return name
 
     def _group_UNP_data(self, complex_id, accession, name, stoichiometry, component):
         self.unp_only_components.append(component)
