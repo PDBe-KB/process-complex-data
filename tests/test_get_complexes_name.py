@@ -693,7 +693,7 @@ class TestComplexName(TestCase):
         complex_obj.complex_data = mock_pdb_complexes_data_one
         complex_obj._process_complex_names()
         self.assertEqual(
-            complex_obj.complex_data_dict["PDB-CPX-1"]["complex_name"], "MoeE5"
+            complex_obj.complex_name_dict["PDB-CPX-1"]["complex_name"], "MoeE5"
         )
 
     def test_complex_name_from_complex_portal(self):
@@ -716,13 +716,13 @@ class TestComplexName(TestCase):
         complex_obj.complex_portal_dict = mock_complex_portal_component_dict_two
         complex_obj.complex_data = mock_pdb_complexes_data_two
         complex_obj._process_complex_names()
-        print(complex_obj.complex_data_dict["PDB-CPX-7330"].keys())
+        print(complex_obj.complex_name_dict["PDB-CPX-7330"].keys())
         # self.assertEqual(
         #     complex_obj.complex_data_dict["PDB-CPX-7330"]["complex_portal_id"],
         #     "CPX-724",
         # )
         self.assertEqual(
-            complex_obj.complex_data_dict["PDB-CPX-7330"]["complex_name"],
+            complex_obj.complex_name_dict["PDB-CPX-7330"]["complex_name"],
             "Centrin-2-SFI1 complex",
         )
 
@@ -738,11 +738,11 @@ class TestComplexName(TestCase):
         complex_obj.complex_data = mock_pdb_complexes_data_three
         complex_obj._process_complex_names()
         self.assertEqual(
-            complex_obj.complex_data_dict["PDB-CPX-60"]["complex_name_type"],
+            complex_obj.complex_name_dict["PDB-CPX-60"]["complex_name_type"],
             "protein name from UniProt and antibody",
         )
         self.assertEqual(
-            complex_obj.complex_data_dict["PDB-CPX-60"]["complex_name"],
+            complex_obj.complex_name_dict["PDB-CPX-60"]["complex_name"],
             "Genome polyprotein and ZV-48 Antibody scFv and ZV-48 Antibody scFv",
         )
 
@@ -758,7 +758,7 @@ class TestComplexName(TestCase):
         complex_obj.complex_data = mock_pdb_complexes_data_four
         complex_obj._process_complex_names()
         self.assertEqual(
-            complex_obj.complex_data_dict["PDB-CPX-79007"]["complex_name"],
+            complex_obj.complex_name_dict["PDB-CPX-79007"]["complex_name"],
             "RNA",
         )
 
@@ -782,11 +782,11 @@ class TestComplexName(TestCase):
         complex_obj.complex_data = mock_pdb_complexes_data_five
         complex_obj._process_complex_names()
         self.assertEqual(
-            complex_obj.complex_data_dict["PDB-CPX-50289"]["complex_name_type"],
+            complex_obj.complex_name_dict["PDB-CPX-50289"]["complex_name_type"],
             "complex portal and RNA",
         )
         self.assertEqual(
-            complex_obj.complex_data_dict["PDB-CPX-50289"]["complex_name"],
+            complex_obj.complex_name_dict["PDB-CPX-50289"]["complex_name"],
             "LSM2-8 complex and U4/U6 snRNA-associated-splicing factor PRP24 and RNA",
         )
 
@@ -802,11 +802,11 @@ class TestComplexName(TestCase):
         complex_obj.complex_data = mock_pdb_complexes_data_six
         complex_obj._process_complex_names()
         self.assertEqual(
-            complex_obj.complex_data_dict["PDB-CPX-317"]["complex_name_type"],
+            complex_obj.complex_name_dict["PDB-CPX-317"]["complex_name_type"],
             "protein name from UniProt and peptide",
         )
         self.assertEqual(
-            complex_obj.complex_data_dict["PDB-CPX-317"]["complex_name"],
+            complex_obj.complex_name_dict["PDB-CPX-317"]["complex_name"],
             "Cyanophycin synthetase and peptide",
         )
 
@@ -822,11 +822,11 @@ class TestComplexName(TestCase):
         complex_obj.complex_data = mock_pdb_complexes_data_seven
         complex_obj._process_complex_names()
         self.assertEqual(
-            complex_obj.complex_data_dict["PDB-CPX-551"]["complex_name_type"],
+            complex_obj.complex_name_dict["PDB-CPX-551"]["complex_name_type"],
             "ribosome",
         )
         self.assertEqual(
-            complex_obj.complex_data_dict["PDB-CPX-551"]["derived_complex_name"],
+            complex_obj.complex_name_dict["PDB-CPX-551"]["derived_complex_name"],
             "30S ribosome subunit and tRNA and RNA",
         )
 
@@ -856,6 +856,6 @@ class TestComplexName(TestCase):
         complex_obj.complex_data = mock_pdb_complexes_data_nine
         complex_obj._process_complex_names()
         self.assertEqual(
-            complex_obj.complex_data_dict["PDB-CPX-709"]["complex_name_type"],
+            complex_obj.complex_name_dict["PDB-CPX-709"]["complex_name_type"],
             "heterodimer",
         )
