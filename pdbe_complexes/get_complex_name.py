@@ -90,7 +90,6 @@ class ProcessComplexName:
 
     def run_process(self):
         self._get_complex_portal_entries()
-        # print(self.complex_portal_dict)
         self._get_pdb_complex_entries()
         self._process_complex_names()
         ut.export_csv(
@@ -186,6 +185,75 @@ class ProcessComplexName:
         """
         complex_name = ""
         potential_name_list = []
+
+        complex_portal_names = self._process_complex_portal_names_with_partial_mapping()
+        if complex_portal_names:
+            complex_portal_names_string = " and ".join(complex_portal_names)
+
+            # unp_name_list = []
+            # for unp in self.unp_name_and_accession:
+            #     unp_name_list.append(self.unp_name_and_accession[unp].get("name"))
+
+            unp_accessions = self.unp_name_and_accession.keys()
+            unp_name_list = [
+                self.unp_name_and_accession[unp].get("name") for unp in unp_accessions
+            ]
+
+            # if no UNP accessions remain then this is a complex of Complex Portal complexes
+            if len(unp_name_list) == 0:
+                complex_name = self._get_name_from_complex_portal_with_complex(
+                    complex_portal_names_string
+                )
+            # if only one UNP accession remaining then this is a binary complex
+            # with one part being Complex Portal name
+            elif len(unp_name_list) == 1:
+                complex_name = self._get_name_from_complex_portal_with_protein(
+                    complex_portal_names_string, unp_name_list
+                )
+            else:
+                potential_name_list.append(complex_portal_names_string)
+            if complex_name:
+                if self.rna_polymer_components:
+                    complex_name = self._get_name_from_complex_portal_with_nucleic_acid(
+                        complex_name, "RNA"
+                    )
+                if self.dna_polymer_components:
+                    complex_name = self._get_name_from_complex_portal_with_nucleic_acid(
+                        complex_name, "DNA"
+                    )
+
+        return complex_name, potential_name_list
+
+    def _get_name_from_complex_portal_with_nucleic_acid(self, complex_name, na_type):
+        complex_name = f"{complex_name} and {na_type}"
+        self.complex_name_type = f"complex portal and {na_type}"
+        return complex_name
+
+    # def get_name_from_complex_portal_with_DNA(self, complex_name):
+    #     complex_name = complex_name + " and DNA"
+    #     self.complex_name_type = "complex portal and DNA"
+    #     return complex_name
+
+    # def _get_name_from_complex_portal_with_RNA(self, complex_name):
+    #     complex_name = complex_name + " and RNA"
+    #     self.complex_name_type = "complex portal and RNA"
+    #     return complex_name
+
+    def _get_name_from_complex_portal_with_protein(
+        self, complex_portal_names_string, unp_name_list
+    ):
+        complex_name = "{} and {}".format(
+            complex_portal_names_string, "".join(unp_name_list)
+        )
+        self.complex_name_type = "complex portal and protein"
+        return complex_name
+
+    def _get_name_from_complex_portal_with_complex(self, complex_portal_names_string):
+        complex_name = complex_portal_names_string
+        self.complex_name_type = "multi complex portal complex"
+        return complex_name
+
+    def _process_complex_portal_names_with_partial_mapping(self):
         complex_portal_names = []
         for complex_portal_id in self.partial_mapping_to_complex_portal:
             self.partial_complex_portal_id.append(complex_portal_id)
@@ -198,36 +266,7 @@ class ProcessComplexName:
             ret = self.complex_portal_names.get(complex_portal_id, None)
             if ret:
                 complex_portal_names.append(ret)
-
-        if complex_portal_names:
-            complex_portal_names_string = " and ".join(complex_portal_names)
-            unp_name_list = []
-
-            for unp in self.unp_name_and_accession:
-                unp_name_list.append(self.unp_name_and_accession[unp].get("name"))
-
-            # if no UNP accessions remain then this is a complex of Complex Portal complexes
-            if len(unp_name_list) == 0:
-                complex_name = complex_portal_names_string
-                self.complex_name_type = "multi complex portal complex"
-            # if only one UNP accession remaining then this is a binary complex
-            # with one part being Complex Portal name
-            elif len(unp_name_list) == 1:
-                complex_name = "{} and {}".format(
-                    complex_portal_names_string, "".join(unp_name_list)
-                )
-                self.complex_name_type = "complex portal and protein"
-            else:
-                potential_name_list.append(complex_portal_names_string)
-            if complex_name:
-                if self.rna_polymer_components:
-                    complex_name = complex_name + " and RNA"
-                    self.complex_name_type = "complex portal and RNA"
-                if self.dna_polymer_components:
-                    complex_name = complex_name + " and DNA"
-                    self.complex_name_type = "complex portal and DNA"
-
-        return complex_name, potential_name_list
+                return complex_portal_names
 
     def _get_complex_portal_name(self):
         """
@@ -282,28 +321,33 @@ class ProcessComplexName:
             if set(self.polymers) == {"PROTEIN"} and len(self.components) == 1:
                 complex_name = self.get_protein_name_from_PDB_entry()
         elif set(self.polymers) == {"DNA"}:
-            complex_name = self.get_general_DNA_name()
+            complex_name = self._get_general_nucleic_acid_name("DNA")
         elif set(self.polymers) == {"RNA"}:
-            complex_name = self.get_general_RNA_name()
+            complex_name = self._get_general_nucleic_acid_name("RNA")
         elif sorted(set(self.polymers)) == {"DNA", "RNA"}:
-            complex_name = self.get_general_hybrid_nucleic_acid_name()
+            complex_name = self._get_general_nucleic_acid_name("DNA and RNA")
 
         return complex_name
 
-    def get_general_hybrid_nucleic_acid_name(self):
-        complex_name = "DNA and RNA"
-        self.complex_name_type = "DNA and RNA"
-        return complex_name
+    def _get_general_nucleic_acid_name(self, na_type):
+        # self.complex_name_type = na_type
+        self.complex_name_type = "general nucleic acid name"
+        return na_type
 
-    def get_general_RNA_name(self):
-        complex_name = "RNA"
-        self.complex_name_type = "RNA"
-        return complex_name
+    # def get_general_hybrid_nucleic_acid_name(self):
+    #     complex_name = "DNA and RNA"
+    #     self.complex_name_type = "DNA and RNA"
+    #     return complex_name
 
-    def get_general_DNA_name(self):
-        complex_name = "DNA"
-        self.complex_name_type = "DNA"
-        return complex_name
+    # def get_general_RNA_name(self):
+    #     complex_name = "RNA"
+    #     self.complex_name_type = "RNA"
+    #     return complex_name
+
+    # def get_general_DNA_name(self):
+    #     complex_name = "DNA"
+    #     self.complex_name_type = "DNA"
+    #     return complex_name
 
     def get_protein_name_from_PDB_entry(self):
         complex_name = ""
@@ -461,33 +505,29 @@ class ProcessComplexName:
         # get a name for the complex
         complex_name = self._get_complex_name()
         # check annotated names
-        complex_name = self.get_name_from_PDBe_curated(complex_name)
+        complex_name = self._get_name_from_PDBe_curated(complex_name)
         # check partial mapping to complex portal
-        complex_name = self.get_name_from_Complex_Portal_with_partial_mapping(
+        complex_name = self._get_name_from_Complex_Portal_with_partial_mapping(
             complex_name
         )
         if not complex_name:
-
             found_match = self._check_go()
             if found_match:
                 self.complex_name_type = "GO"
-
-            # ribosome
-            self.check_if_ribosome(complex_id, found_match)
-
+            # check for ribosome
+            self._check_if_ribosome(complex_id, found_match)
             """
             protein complexes which haven't got a name elsewhere
             and are all subunits or chains
             """
-            self.check_if_protein_complex_without_name()
-
+            self._check_if_protein_complex_without_name()
             # two protein complexes which haven't got a name elsewhere
-            self.check_if_heterodimer()
+            self._check_if_heterodimer()
         # check for tRNA
         self._check_if_trna()
         # join the names together to produce the final derived name
-        derived_complex_name = self.build_derived_name()
-        derived_complex_name, complex_name = self.format_names(
+        derived_complex_name = self._build_derived_name()
+        derived_complex_name, complex_name = self._format_names(
             derived_complex_name, complex_name
         )
         self.complex_data_dict[complex_id] = {
@@ -496,14 +536,14 @@ class ProcessComplexName:
             "complex_name_type": self.complex_name_type,
         }
 
-    def format_names(self, derived_complex_name, complex_name):
+    def _format_names(self, derived_complex_name, complex_name):
         if complex_name:
             complex_name = str(complex_name).strip()
         if derived_complex_name:
             derived_complex_name = str(derived_complex_name).strip()
         return derived_complex_name, complex_name
 
-    def build_derived_name(self):
+    def _build_derived_name(self):
         derived_complex_name = ""
         if self.derived_complex_name_list:
             if self.rna_no_accession:
@@ -513,7 +553,7 @@ class ProcessComplexName:
             derived_complex_name = " and ".join(self.derived_complex_name_list)
         return derived_complex_name
 
-    def check_if_heterodimer(self):
+    def _check_if_heterodimer(self):
         if (
             not self.derived_complex_name_list
             and self.all_protein_unp
@@ -522,7 +562,7 @@ class ProcessComplexName:
             self.derived_complex_name_list.extend(list(self.unp_names))
             self.complex_name_type = "heterodimer"
 
-    def check_if_protein_complex_without_name(self):
+    def _check_if_protein_complex_without_name(self):
         if not self.derived_complex_name_list and self.all_protein_unp:
             if self.name_counter:
                 num_unp_components = len(self.unp_only_components)
@@ -533,7 +573,7 @@ class ProcessComplexName:
                     self.derived_complex_name_list.append(" ".join(test_list))
                     self.complex_name_type = "common name from entity names"
 
-    def check_if_ribosome(self, complex_id, found_match):
+    def _check_if_ribosome(self, complex_id, found_match):
         if (
             not found_match
             and self.unp_name_and_accession
@@ -547,7 +587,7 @@ class ProcessComplexName:
                 self.derived_complex_name_list.append(potential_name)
                 self.complex_name_type = "ribosome"
 
-    def get_name_from_Complex_Portal_with_partial_mapping(self, complex_name):
+    def _get_name_from_Complex_Portal_with_partial_mapping(self, complex_name):
         if not complex_name and self.unp_only_components:
             self.partial_mapping_to_complex_portal = (
                 self._get_partial_complex_portal_mapping()
@@ -562,7 +602,7 @@ class ProcessComplexName:
                     self.complex_name_type = "complex portal super-complex"
         return complex_name
 
-    def get_name_from_PDBe_curated(self, complex_name):
+    def _get_name_from_PDBe_curated(self, complex_name):
         if not complex_name and self.unp_only_components:
             potential_name = self.check_annotated_name()
             if potential_name:
@@ -627,8 +667,8 @@ class ProcessComplexName:
         pdb_entity = row.get("pdb_entity", "")
         stoichiometry = row.get("stoichiometry", 0)
         # entity_length = row.get("entity_length")
-        stoichiometry = self.get_stoichiometry_number(stoichiometry)
-        is_monomer = self.validate_monomer(complex_id, stoichiometry)
+        stoichiometry = self._get_stoichiometry_number(stoichiometry)
+        is_monomer = self._validate_monomer(complex_id, stoichiometry)
         self.monomer_data[complex_id] = is_monomer
         uniq_id = accession if accession else polymer_type
         self.components.append(uniq_id)
@@ -644,19 +684,21 @@ class ProcessComplexName:
             self.non_unp_polymer_components.append(component)
         if polymer_type == "PROTEIN":
             if database == "UNP":
-                self.group_UNP_data(
+                self._group_UNP_data(
                     complex_id, accession, name, stoichiometry, component
                 )
             elif is_antibody:
-                name = self.group_antibody_data(name, pdb_entity)
-            elif self.is_prd(pdb_entity):
-                name = self.group_prd_data(pdb_entity)
-            elif self.is_peptide(name):
-                self.group_peptide_data(name, component)
+                name = self._group_antibody_data(name, pdb_entity)
+            # Need to recheck
+            elif self._is_prd(pdb_entity):
+                name = self._group_prd_data(pdb_entity)
+            # Need to recheck
+            elif self._is_peptide(name):
+                self._group_peptide_data(name, component)
             else:
-                self.group_other_protein_data(name, component)
+                self._group_other_protein_data(name, component)
         elif polymer_type == "RNA":
-            self.group_RNA_data(database, accession, component)
+            self._group_RNA_data(database, accession, component)
         elif polymer_type == "DNA":
             self.dna_polymer_components.append(component)
         else:
@@ -664,7 +706,7 @@ class ProcessComplexName:
         if name:
             self.names.append(name)
 
-    def validate_monomer(self, complex_id, stoichiometry):
+    def _validate_monomer(self, complex_id, stoichiometry):
         monomer = True
         if stoichiometry:
             if int(stoichiometry) > 1:
@@ -673,13 +715,13 @@ class ProcessComplexName:
             monomer = False
         return monomer
 
-    def get_stoichiometry_number(self, stoichiometry):
+    def _get_stoichiometry_number(self, stoichiometry):
         if not stoichiometry:
             stoichiometry = 0
         self.stoichiometry_count += int(stoichiometry)
         return stoichiometry
 
-    def is_peptide(self, name):
+    def _is_peptide(self, name):
         return name in (
             "peptide",
             "short peptide",
@@ -687,35 +729,35 @@ class ProcessComplexName:
             "synthetic short peptide",
         )
 
-    def is_prd(self, pdb_entity):
-        return self.prd_names.get(pdb_entity)
+    def _is_prd(self, pdb_entity):
+        return pdb_entity in self.prd_names
 
-    def group_RNA_data(self, database, accession, component):
+    def _group_RNA_data(self, database, accession, component):
         self.rna_polymer_components.append(component)
         if database == "Rfam":
             self.rna_polymer_accessions.append(accession)
         else:
             self.rna_no_accession.append(component)
 
-    def group_other_protein_data(self, name, component):
+    def _group_other_protein_data(self, name, component):
         self.other_protein_components.append(component)
         self.other_protein_components_names.add(name)
 
-    def group_peptide_data(self, name, component):
+    def _group_peptide_data(self, name, component):
         self.peptide_components.append(component)
         self.peptide_components_names.append(name)
 
-    def group_prd_data(self, pdb_entity):
+    def _group_prd_data(self, pdb_entity):
         name = self.prd_names.get(pdb_entity)
         self.prd_components.append(name)
         return name
 
-    def group_antibody_data(self, name, pdb_entity):
+    def _group_antibody_data(self, name, pdb_entity):
         name = self.antibody_names.get(pdb_entity, name)
         self.antibody_components.append(name)
         return name
 
-    def group_UNP_data(self, complex_id, accession, name, stoichiometry, component):
+    def _group_UNP_data(self, complex_id, accession, name, stoichiometry, component):
         self.unp_only_components.append(component)
         self.unp_only_components_no_stoch.append(accession)
         self.individual_unp_component_dict.setdefault(accession, set()).add(complex_id)
@@ -724,7 +766,7 @@ class ProcessComplexName:
 
         name_list = name.split(" ")
         # check the name has a name like "subunit" etc...
-        self.check_excluded_names(name_list)
+        self._check_excluded_names(name_list)
         component_go_terms = self.unp_component_dict.get(accession, [])
         self.unp_name_and_accession[accession] = {
             "name": name,
@@ -733,7 +775,7 @@ class ProcessComplexName:
         for go_term in component_go_terms:
             self.go_terms.setdefault(go_term, []).append(accession)
 
-    def check_excluded_names(self, name_list):
+    def _check_excluded_names(self, name_list):
         if [x for x in name_list if x.lower() in name_exclude_list]:
             for sub_name in name_list:
                 if sub_name.lower() not in name_exclude_list:
