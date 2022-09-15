@@ -25,21 +25,21 @@ class ProcessComplexName:
         self.csv_path = csv_path
         self.complex_portal_path = complex_portal_path
         self.complex_data = {}
-        self.complex_data_dict = OrderedDict()
+        self.complex_name_dict = OrderedDict()
         self.complex_portal_entries = {}
         self.complex_portal_entries_no_stoch = {}
         self.complex_portal_names = {}
         self.complex_portal_dict = {}
-        self.pdb_descriptions = {}
-        self.pdb_info = {}
+        # self.pdb_descriptions = {}
+        # self.pdb_info = {}
         self.annotated_names = {}
         self.antibody_names = {}
         self.prd_names = {}
-        self.summary_data = []
-        self.pdb_data = {}
-        self.all_compositions = []
-        self.pdb_entry_data = {}
-        self.seen_complex_ids = set()
+        # self.summary_data = []
+        # self.pdb_data = {}
+        # self.all_compositions = []
+        # self.pdb_entry_data = {}
+        # self.seen_complex_ids = set()
         self.unp_component_dict_with_stoch_per_complex_id = {}
         self.unp_component_dict_no_stoch_per_complex_id = {}
         self.unp_component_dict_with_stoch_dict_per_complex_id = {}
@@ -48,51 +48,51 @@ class ProcessComplexName:
         self.individual_unp_component_dict = {}
 
         # individual components
-        self.all_protein = True
-        self.all_unp = True
-        self.all_protein_unp = False
-        self.components = []
-        self.components_with_stoch = []
-        self.unp_components_with_stoch_dict = {}
-        self.unp_only_components = []
-        self.unp_name_and_accession = {}
-        self.unp_only_components_no_stoch = []
-        self.antibody_components = []
-        self.peptide_components = []
-        self.peptide_components_names = []
-        self.prd_components = []
-        self.other_protein_components = []
-        self.other_protein_components_names = set()
-        self.rna_polymer_components = []
-        self.rna_polymer_accessions = []
-        self.rna_no_accession = []
-        self.dna_polymer_components = []
-        self.other_polymer_components = []
-        self.non_unp_polymer_components = []
-        self.go_terms = {}
-        self.common_go_terms = []
-        self.taxids = []
-        self.polymers = []
-        self.databases = []
-        self.names = []
-        self.unp_names = set()
-        self.name_counter = Counter()
-        self.derived_complex_name_list = []
-        self.partial_complex_portal_id = []
-        self.partial_mapping_to_complex_portal = {}
-        self.stoichiometry_count = 0
-        self.complex_portal_id = None
-        self.unp_only_complex_portal_id = None
-        self.pdb_entries = []
-        self.entry_symmetry = {}
-        self.complex_name_type = ""
+        # self.all_protein = True
+        # self.all_unp = True
+        # self.all_protein_unp = False
+        # self.components = []
+        # self.components_with_stoch = []
+        # self.unp_components_with_stoch_dict = {}
+        # self.unp_only_components = []
+        # self.unp_name_and_accession = {}
+        # self.unp_only_components_no_stoch = []
+        # self.antibody_components = []
+        # self.peptide_components = []
+        # self.peptide_components_names = []
+        # self.prd_components = []
+        # self.other_protein_components = []
+        # self.other_protein_components_names = set()
+        # self.rna_polymer_components = []
+        # self.rna_polymer_accessions = []
+        # self.rna_no_accession = []
+        # self.dna_polymer_components = []
+        # self.other_polymer_components = []
+        # self.non_unp_polymer_components = []
+        # self.go_terms = {}
+        # self.common_go_terms = []
+        # self.taxids = []
+        # self.polymers = []
+        # self.databases = []
+        # self.names = []
+        # self.unp_names = set()
+        # self.name_counter = Counter()
+        # self.derived_complex_name_list = []
+        # self.partial_complex_portal_id = []
+        # self.partial_mapping_to_complex_portal = {}
+        # self.stoichiometry_count = 0
+        # self.complex_portal_id = None
+        # self.unp_only_complex_portal_id = None
+        # self.pdb_entries = []
+        # self.entry_symmetry = {}
+        # self.complex_name_type = ""
 
     def run_process(self):
         self._get_complex_portal_entries()
         self._get_pdb_complex_entries()
         self._process_complex_names()
         ut.export_csv(
-            self.complex_data_dict,
+            self.complex_name_dict,
             "pdb_complex_id",
             csv_headers,
             self.csv_path,
@@ -228,16 +228,6 @@ class ProcessComplexName:
         self.complex_name_type = f"complex portal and {na_type}"
         return complex_name
 
-    # def get_name_from_complex_portal_with_DNA(self, complex_name):
-    #     complex_name = complex_name + " and DNA"
-    #     self.complex_name_type = "complex portal and DNA"
-    #     return complex_name
-
-    # def _get_name_from_complex_portal_with_RNA(self, complex_name):
-    #     complex_name = complex_name + " and RNA"
-    #     self.complex_name_type = "complex portal and RNA"
-    #     return complex_name
-
     def _get_name_from_complex_portal_with_protein(
         self, complex_portal_names_string, unp_name_list
     ):
@@ -318,7 +308,8 @@ class ProcessComplexName:
                     self.get_protein_name_from_Uniprot_with_additional_protein_factors()
                 )
             if set(self.polymers) == {"PROTEIN"} and len(self.components) == 1:
-                complex_name = self.get_protein_name_from_PDB_entry()
+                pass
+                # complex_name = self.get_protein_name_from_PDB_entry()
         elif set(self.polymers) == {"DNA"}:
             complex_name = self._get_general_nucleic_acid_name("DNA")
         elif set(self.polymers) == {"RNA"}:
@@ -333,33 +324,20 @@ class ProcessComplexName:
         self.complex_name_type = "general nucleic acid name"
         return na_type
 
-    # def get_general_hybrid_nucleic_acid_name(self):
-    #     complex_name = "DNA and RNA"
-    #     self.complex_name_type = "DNA and RNA"
+    # def get_protein_name_from_PDB_entry(self):
+    #     # this method is not working
+    #     complex_name = ""
+    #     pdbid_assembly = self.pdb_entries[0]
+    #     pdbid = pdbid_assembly.split("_")[0]
+    #     # pdb_descriptions is an empty dict
+    #     protein_entities = self.pdb_descriptions.get(pdbid, {})
+    #     entity_names = set()
+    #     for entity in protein_entities:
+    #         entity_names.add(protein_entities[entity])
+    #     if entity_names:
+    #         complex_name = ",".join(entity_names)
+    #         self.complex_name_type = "protein name from entry"
     #     return complex_name
-
-    # def get_general_RNA_name(self):
-    #     complex_name = "RNA"
-    #     self.complex_name_type = "RNA"
-    #     return complex_name
-
-    # def get_general_DNA_name(self):
-    #     complex_name = "DNA"
-    #     self.complex_name_type = "DNA"
-    #     return complex_name
-
-    def get_protein_name_from_PDB_entry(self):
-        complex_name = ""
-        pdbid_assembly = self.pdb_entries[0]
-        pdbid = pdbid_assembly.split("_")[0]
-        protein_entities = self.pdb_descriptions.get(pdbid, {})
-        entity_names = set()
-        for entity in protein_entities:
-            entity_names.add(protein_entities[entity])
-        if entity_names:
-            complex_name = ",".join(entity_names)
-            self.complex_name_type = "protein name from entry"
-        return complex_name
 
     def get_protein_name_from_Uniprot_with_additional_protein_factors(self):
         complex_names = []
@@ -451,7 +429,6 @@ class ProcessComplexName:
         names to the complexes
         """
         for complex_id in self.complex_data:
-
             self._process_complex_id(complex_id)
 
     def _process_complex_id(self, complex_id):  # noqa: C901
@@ -491,10 +468,10 @@ class ProcessComplexName:
         self.pdb_entries = []
         self.complex_portal_id = None
         self.unp_only_complex_portal_id = None
-        # derived_complex_name = ""
+        derived_complex_name = ""
         self.complex_name_type = ""
-        components = self.complex_data[complex_id].get("components", [])
 
+        components = self.complex_data[complex_id].get("components", [])
         for row in components:
             self._process_component(complex_id, row)
 
@@ -529,7 +506,7 @@ class ProcessComplexName:
         derived_complex_name, complex_name = self._format_names(
             derived_complex_name, complex_name
         )
-        self.complex_data_dict[complex_id] = {
+        self.complex_name_dict[complex_id] = {
             "complex_name": complex_name,
             "derived_complex_name": derived_complex_name,
             "complex_name_type": self.complex_name_type,
