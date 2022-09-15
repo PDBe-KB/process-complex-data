@@ -22,6 +22,7 @@ class ProcessComplexName:
         self.bolt_host = bolt_uri
         self.username = username
         self.password = password
+        self.neo4j_info = (bolt_uri, username, password)
         self.csv_path = csv_path
         self.complex_portal_path = complex_portal_path
         self.complex_data = {}
@@ -458,7 +459,7 @@ class ProcessComplexName:
         self.taxids = []
         self.polymers = []
         self.databases = []
-        self.names = []
+        # self.names = []
         self.unp_names = set()
         self.name_counter = Counter()
         self.derived_complex_name_list = []
@@ -633,7 +634,6 @@ class ProcessComplexName:
             self.all_protein_unp = False
 
     def _process_component(self, complex_id, row):  # noqa: C901
-        # complex_id = row.get('pdb_complex_id')
         polymer_type = row.get("polymer_type", "")
         database = row.get("database", "")
         accession = row.get("accession", "")
@@ -642,7 +642,6 @@ class ProcessComplexName:
         is_antibody = row.get("is_antibody", "")
         pdb_entity = row.get("pdb_entity", "")
         stoichiometry = row.get("stoichiometry", 0)
-        # entity_length = row.get("entity_length")
         stoichiometry = self._get_stoichiometry_number(stoichiometry)
         uniq_id = accession if accession else polymer_type
         self.components.append(uniq_id)
@@ -675,8 +674,8 @@ class ProcessComplexName:
             self.dna_polymer_components.append(component)
         else:
             self.other_polymer_components.append(polymer_type)
-        if name:
-            self.names.append(name)
+        # if name:
+        #     self.names.append(name)
 
     def _get_stoichiometry_number(self, stoichiometry):
         if not stoichiometry:
