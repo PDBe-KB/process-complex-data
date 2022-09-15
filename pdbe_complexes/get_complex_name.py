@@ -36,7 +36,6 @@ class ProcessComplexName:
         self.antibody_names = {}
         self.prd_names = {}
         self.summary_data = []
-        self.monomer_data = {}
         self.pdb_data = {}
         self.all_compositions = []
         self.pdb_entry_data = {}
@@ -668,8 +667,6 @@ class ProcessComplexName:
         stoichiometry = row.get("stoichiometry", 0)
         # entity_length = row.get("entity_length")
         stoichiometry = self._get_stoichiometry_number(stoichiometry)
-        is_monomer = self._validate_monomer(complex_id, stoichiometry)
-        self.monomer_data[complex_id] = is_monomer
         uniq_id = accession if accession else polymer_type
         self.components.append(uniq_id)
         if tax_id:
@@ -703,14 +700,6 @@ class ProcessComplexName:
             self.other_polymer_components.append(polymer_type)
         if name:
             self.names.append(name)
-
-    def _validate_monomer(self, complex_id, stoichiometry):
-        monomer = True
-        if stoichiometry and int(stoichiometry) > 1:
-            monomer = False
-        if complex_id in self.monomer_data:
-            monomer = False
-        return monomer
 
     def _get_stoichiometry_number(self, stoichiometry):
         if not stoichiometry:
