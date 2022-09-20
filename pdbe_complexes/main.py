@@ -1,5 +1,6 @@
 import argparse
 
+from pdbe_complexes.constants import complex_name_headers as headers_two
 from pdbe_complexes.get_complex_name import ProcessComplexName
 from pdbe_complexes.process_complex import Neo4JProcessComplex
 from pdbe_complexes.utils import utility as ut
@@ -60,7 +61,15 @@ def main():
         csv_path=args.csv_path,
         complex_portal_path=args.complex_portal_path,
     )
-    complex.run_process()
+    complex_names_data = complex.run_process()
+    csv_params = (
+        complex_names_data,
+        "pdb_complex_id",
+        headers_two,
+        args.csv_path,
+        "complexes_name.csv",
+    )
+    ut.export_csv(csv_params)
 
     ut.merge_csv_files(args.csv_path)
     ut.clean_files(args.csv_path)
