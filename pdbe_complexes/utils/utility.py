@@ -7,7 +7,7 @@ from py2neo import Graph
 from pdbe_complexes.log import logger
 
 
-def export_csv(data, key_name, headers, csv_path, filename):
+def export_csv(params):
     """General function to generate CSV file
 
     Args:
@@ -17,14 +17,14 @@ def export_csv(data, key_name, headers, csv_path, filename):
         csv_path (str): output CSV path
         filename (str): the name of the output file
     """
-    base_path = csv_path
-    complete_path = os.path.join(base_path, filename)
+    base_path = params[3]
+    complete_path = os.path.join(base_path, params[4])
     with open(complete_path, "w", newline="") as reference_file:
         file_csv = csv.writer(reference_file)
-        file_csv.writerow([key_name, *headers])
-        for key, val in data.items():
-            file_csv.writerow([key] + [val.get(i, "") for i in headers])
-    logger.info(f"Filename {filename} has been written to {csv_path}")
+        file_csv.writerow([params[1], *params[2]])
+        for key, val in params[0].items():
+            file_csv.writerow([key] + [val.get(i, "") for i in params[2]])
+    logger.info(f"Filename {params[4]} has been written to {params[3]}")
 
 
 def clean_files(
