@@ -11,11 +11,11 @@ def export_csv(params):
     """General function to generate CSV file
 
     Args:
-        data (dict): nested dict containing the desired data
-        key_name (string): primary column name for aggregating the data
-        headers (list): list of column names
-        csv_path (str): output CSV path
-        filename (str): the name of the output file
+        params[0] (dict): nested dict containing the desired data
+        params[1] (string): primary column name for aggregating the data
+        params[2] (list): list of column names
+        params[3] (str): output CSV path
+        params[4] (str): the name of the output file
     """
     base_path = params[3]
     complete_path = os.path.join(base_path, params[4])
