@@ -1,5 +1,6 @@
 import argparse
 
+from pdbe_complexes.constants import complex_mapping_headers as headers_one
 from pdbe_complexes.constants import complex_name_headers as headers_two
 from pdbe_complexes.get_complex_name import ProcessComplexName
 from pdbe_complexes.process_complex import Neo4JProcessComplex
@@ -52,7 +53,15 @@ def main():
         password=args.password,
         csv_path=args.csv_path,
     )
-    complex.run_process()
+    complex_mapping_data = complex.run_process()
+    csv_params = (
+        complex_mapping_data,
+        "md5_obj",
+        headers_one,
+        args.csv_path,
+        "complexes_mapping.csv",
+    )
+    ut.export_csv(csv_params)
 
     complex = ProcessComplexName(
         bolt_uri=args.bolt_url,
