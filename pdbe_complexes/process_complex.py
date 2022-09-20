@@ -4,7 +4,6 @@ import os
 from collections import OrderedDict
 
 from pdbe_complexes import queries as qy
-from pdbe_complexes.constants import complex_mapping_headers as csv_headers
 from pdbe_complexes.log import logger
 from pdbe_complexes.utils import utility as ut
 from pdbe_complexes.utils.operations import Neo4jDatabaseOperations
@@ -42,18 +41,12 @@ class Neo4JProcessComplex:
         """
 
         self.get_complex_portal_data()
-        self.drop_PDBComplex_nodes()
+        # self.drop_PDBComplex_nodes()
         self.get_reference_mapping()
         self.process_assembly_data()
-        self.post_processing()
-        self.create_subcomplex_relationships()
-        ut.export_csv(
-            self.reference_mapping,
-            "md5_obj",
-            csv_headers,
-            self.csv_path,
-            "complexes_mapping.csv",
-        )
+        # self.post_processing()
+        # self.create_subcomplex_relationships()
+        return self.reference_mapping
 
     def get_complex_portal_data(self):
         """
