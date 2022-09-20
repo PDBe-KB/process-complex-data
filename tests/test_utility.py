@@ -67,7 +67,8 @@ class TestUtility(TestCaseBase):
         base_path = Path.cwd()
         output_file_path = base_path.joinpath("tests").joinpath("data")
         filename = "mock_complexes_mapping_example.csv"
-        export_csv(mock_data, "md5_obj", csv_headers, output_file_path, filename)
+        csv_params = (mock_data, "md5_obj", csv_headers, output_file_path, filename)
+        export_csv(csv_params)
         path = Path(output_file_path.joinpath(filename))
 
         if path:
