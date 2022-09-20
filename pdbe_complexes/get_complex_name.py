@@ -1,9 +1,7 @@
 from collections import Counter, OrderedDict
 
-from pdbe_complexes.constants import complex_name_headers as csv_headers
 from pdbe_complexes.constants import name_exclude_list
 from pdbe_complexes.log import logger
-from pdbe_complexes.utils import utility as ut
 from pdbe_complexes.utils.get_annotated_name import GetAnnotatedName
 from pdbe_complexes.utils.get_data_from_complex_portal_ftp import GetComplexPortalData
 from pdbe_complexes.utils.get_data_from_graph_db import GetComplexData
@@ -92,13 +90,14 @@ class ProcessComplexName:
         self._get_complex_portal_entries()
         self._get_pdb_complex_entries()
         self._process_complex_names()
-        ut.export_csv(
-            self.complex_name_dict,
-            "pdb_complex_id",
-            csv_headers,
-            self.csv_path,
-            "complexes_name.csv",
-        )
+        # ut.export_csv(
+        #     self.complex_name_dict,
+        #     "pdb_complex_id",
+        #     csv_headers,
+        #     self.csv_path,
+        #     "complexes_name.csv",
+        # )
+        return self.complex_name_dict
 
     def _get_complex_portal_entries(self):
         """
