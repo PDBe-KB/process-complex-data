@@ -53,9 +53,9 @@ def main():
         password=args.password,
         csv_path=args.csv_path,
     )
-    complex_mapping_data = complex.run_process()
+    complex.run_process()
     csv_params = (
-        complex_mapping_data,
+        complex.reference_mapping,
         "md5_obj",
         headers_one,
         args.csv_path,
@@ -70,9 +70,9 @@ def main():
         csv_path=args.csv_path,
         complex_portal_path=args.complex_portal_path,
     )
-    complex_names_data = complex.run_process()
+    complex.run_process()
     csv_params = (
-        complex_names_data,
+        complex.complex_name_dict,
         "pdb_complex_id",
         headers_two,
         args.csv_path,
