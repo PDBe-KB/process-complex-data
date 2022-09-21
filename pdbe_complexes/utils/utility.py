@@ -2,7 +2,6 @@ import csv
 import os
 
 import pandas as pd
-from py2neo import Graph
 
 from pdbe_complexes.log import logger
 
@@ -44,25 +43,6 @@ def clean_files(
             logger.info(f"Filename {filename} in {csv_path} has been deleted")
         except FileNotFoundError:
             logger.info(f"Filename {filename} does not exist in {csv_path}")
-
-
-def run_query(neo4j_info, query, param=None):
-    """General function to run neo4j query
-
-    Args:
-        neo4j_info (tuple): a tuple of 3-elems containing bolt_url, username and password
-        query (str): neo4j query
-        param (list of dict, optional): neo4j query params. Defaults to None.
-
-    Returns:
-        obj: neo4j query result
-    """
-    graph = Graph(neo4j_info[0], user=neo4j_info[1], password=neo4j_info[2])
-
-    if param is not None:
-        return graph.run(query, parameters=param)
-    else:
-        return graph.run(query)
 
 
 # def copy_file(src, dst=None, filename="complexes_master.csv"):
