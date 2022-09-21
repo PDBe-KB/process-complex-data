@@ -35,7 +35,6 @@ class Neo4jDatabaseOperations:
         """General function to run neo4j query
 
         Args:
-            neo4j_info (tuple): a tuple of 3-elems containing bolt_url, username and password
             query (str): neo4j query
             param (list of dict, optional): neo4j query params. Defaults to None.
 
