@@ -1,5 +1,6 @@
+from py2neo import Graph
+
 from pdbe_complexes.log import logger
-from pdbe_complexes.utils import utility as ut
 
 
 class Neo4jDatabaseOperations:
@@ -22,11 +23,30 @@ class Neo4jDatabaseOperations:
         logger.info(
             f"Creating relationship between {n1_name} and {n2_name} nodes - START"
         )
-        ut.run_query(
-            self.neo4j_info,
+        self.run_query(
             query_name,
             param={param_name: param_val},
         )
         logger.info(
             f"Creating relationship between {n1_name} and {n2_name} nodes - DONE"
         )
+
+    def run_query(self, query, param=None):
+        """General function to run neo4j query
+
+        Args:
+            neo4j_info (tuple): a tuple of 3-elems containing bolt_url, username and password
+            query (str): neo4j query
+            param (list of dict, optional): neo4j query params. Defaults to None.
+
+        Returns:
+            obj: neo4j query result
+        """
+        graph = Graph(
+            self.neo4j_info[0], user=self.neo4j_info[1], password=self.neo4j_info[2]
+        )
+
+        if param:
+            return graph.run(query, parameters=param)
+        else:
+            return graph.run(query)
