@@ -1,6 +1,6 @@
 from pdbe_complexes import queries as qy
 from pdbe_complexes.log import logger
-from pdbe_complexes.utils import utility as ut
+from pdbe_complexes.utils.operations import Neo4jDatabaseOperations
 
 PEPTIDE_NAMES = {
     "medium_peptide": {"32630": "synthetic peptide", None: "peptide (unknown source"},
@@ -13,19 +13,17 @@ PEPTIDE_NAMES = {
 
 class GetComplexData:
     def __init__(self, bolt_uri, username, password):
+        self.ndo = Neo4jDatabaseOperations((bolt_uri, username, password))
         self.graph = None
         self.molecule_names = {}
         self.pdb_complexes = {}
-        self.neo4j_info = (bolt_uri, username, password)
 
     def _populate_molecule_names_from_entity(self):
         """
         Stores the molecules description obtained from
         entity node into a dictionary
         """
-        query = qy.ENTITY_QUERY
-        mappings = ut.run_query(self.neo4j_info, query)
-
+        mappings = self.ndo.run_query(qy.ENTITY_QUERY)
         for row in mappings:
             entity_uniqid = row.get("entity_uniqid")
             description = row.get("description")
@@ -45,8 +43,7 @@ class GetComplexData:
         else:
             query = qy.RFAM_QUERY
 
-        mappings = ut.run_query(self.neo4j_info, query)
-
+        mappings = self.ndo.run_query(query)
         for row in mappings:
             accession = row.get("accession")
             name = row.get("description")
@@ -67,7 +64,7 @@ class GetComplexData:
         self._populate_molecule_names_from_entity()
 
         logger.info("Start getting PDB Complex Data")
-        mappings = ut.run_query(self.neo4j_info, qy.PDB_COMPLEX_QUERY)
+        mappings = self.ndo.run_query(qy.PDB_COMPLEX_QUERY)
         for row in mappings:
 
             pdb_complex_id = row.get("complex_id")

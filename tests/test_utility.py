@@ -1,10 +1,9 @@
 import os
 from pathlib import Path
 from unittest import TestCase
-from unittest.mock import patch
 
 from pdbe_complexes.constants import complex_mapping_headers as csv_headers
-from pdbe_complexes.utils.utility import export_csv, merge_csv_files, run_query
+from pdbe_complexes.utils.utility import export_csv, merge_csv_files
 
 mock_data = {
     "a9f2c6e982b417463bc093e6b83c278b": {
@@ -35,18 +34,18 @@ class TestCaseBase(TestCase):
 
 
 class TestUtility(TestCaseBase):
-    def setUp(self) -> None:
-        self.username = "mock_username"
-        self.password = "mock_password"
-        self.bolt_uri = "neo4j://"
-        self.query = "mock_query"
+    # def setUp(self) -> None:
+    #     self.ndo = Neo4jDatabaseOperations(("neo4j://", "mock_username", "mock_password"))
+    #     # self.username = "mock_username"
+    #     # self.password = "mock_password"
+    #     # self.bolt_uri = "neo4j://"
+    #     self.query = "mock_query"
 
-    @patch("pdbe_complexes.utils.utility.Graph.run")
-    def test_run_query(self, mock):
-        mock.return_value = True
-        db_info = (self.bolt_uri, self.username, self.password)
-        data = run_query(db_info, self.query)
-        self.assertTrue(data)
+    # @patch("pdbe_complexes.utils.utility.Graph.run")
+    # def test_run_query(self, mock):
+    #     mock.return_value = True
+    #     data = self.ndo.run_query(self.query)
+    #     self.assertTrue(data)
 
     def test_merge_csv_files(self):
         "Test if the merge_csv_files method creates a file"
@@ -67,7 +66,8 @@ class TestUtility(TestCaseBase):
         base_path = Path.cwd()
         output_file_path = base_path.joinpath("tests").joinpath("data")
         filename = "mock_complexes_mapping_example.csv"
-        export_csv(mock_data, "md5_obj", csv_headers, output_file_path, filename)
+        csv_params = (mock_data, "md5_obj", csv_headers, output_file_path, filename)
+        export_csv(csv_params)
         path = Path(output_file_path.joinpath(filename))
 
         if path:
