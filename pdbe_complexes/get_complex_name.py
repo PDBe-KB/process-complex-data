@@ -29,16 +29,9 @@ class ProcessComplexName:
         self.complex_portal_entries_no_stoch = {}
         self.complex_portal_names = {}
         self.complex_portal_dict = {}
-        # self.pdb_descriptions = {}
-        # self.pdb_info = {}
         self.annotated_names = {}
         self.antibody_names = {}
         self.prd_names = {}
-        # self.summary_data = []
-        # self.pdb_data = {}
-        # self.all_compositions = []
-        # self.pdb_entry_data = {}
-        # self.seen_complex_ids = set()
         self.unp_component_dict_with_stoch_per_complex_id = {}
         self.unp_component_dict_no_stoch_per_complex_id = {}
         self.unp_component_dict_with_stoch_dict_per_complex_id = {}
@@ -46,58 +39,10 @@ class ProcessComplexName:
         self.non_unp_polymer_components_per_complex_id = {}
         self.individual_unp_component_dict = {}
 
-        # individual components
-        # self.all_protein = True
-        # self.all_unp = True
-        # self.all_protein_unp = False
-        # self.components = []
-        # self.components_with_stoch = []
-        # self.unp_components_with_stoch_dict = {}
-        # self.unp_only_components = []
-        # self.unp_name_and_accession = {}
-        # self.unp_only_components_no_stoch = []
-        # self.antibody_components = []
-        # self.peptide_components = []
-        # self.peptide_components_names = []
-        # self.prd_components = []
-        # self.other_protein_components = []
-        # self.other_protein_components_names = set()
-        # self.rna_polymer_components = []
-        # self.rna_polymer_accessions = []
-        # self.rna_no_accession = []
-        # self.dna_polymer_components = []
-        # self.other_polymer_components = []
-        # self.non_unp_polymer_components = []
-        # self.go_terms = {}
-        # self.common_go_terms = []
-        # self.taxids = []
-        # self.polymers = []
-        # self.databases = []
-        # self.names = []
-        # self.unp_names = set()
-        # self.name_counter = Counter()
-        # self.derived_complex_name_list = []
-        # self.partial_complex_portal_id = []
-        # self.partial_mapping_to_complex_portal = {}
-        # self.stoichiometry_count = 0
-        # self.complex_portal_id = None
-        # self.unp_only_complex_portal_id = None
-        # self.pdb_entries = []
-        # self.entry_symmetry = {}
-        # self.complex_name_type = ""
-
     def run_process(self):
         self._get_complex_portal_entries()
         self._get_pdb_complex_entries()
         self._process_complex_names()
-        # ut.export_csv(
-        #     self.complex_name_dict,
-        #     "pdb_complex_id",
-        #     csv_headers,
-        #     self.csv_path,
-        #     "complexes_name.csv",
-        # )
-        return self.complex_name_dict
 
     def _get_complex_portal_entries(self):
         """
@@ -320,7 +265,6 @@ class ProcessComplexName:
         return complex_name
 
     def _get_general_nucleic_acid_name(self, na_type):
-        # self.complex_name_type = na_type
         self.complex_name_type = "general nucleic acid name"
         return na_type
 
@@ -458,7 +402,6 @@ class ProcessComplexName:
         self.taxids = []
         self.polymers = []
         self.databases = []
-        # self.names = []
         self.unp_names = set()
         self.name_counter = Counter()
         self.derived_complex_name_list = []
@@ -478,7 +421,7 @@ class ProcessComplexName:
         self._type_checks()
         self._update_ids(complex_id)
         self._process_go_terms()
-        # get a name for the complex
+        # check name from Complex Portal/UniProt
         complex_name = self._get_complex_name()
         # check annotated names
         complex_name = self._get_name_from_PDBe_curated(complex_name)
@@ -673,8 +616,6 @@ class ProcessComplexName:
             self.dna_polymer_components.append(component)
         else:
             self.other_polymer_components.append(polymer_type)
-        # if name:
-        #     self.names.append(name)
 
     def _get_stoichiometry_number(self, stoichiometry):
         if not stoichiometry:
