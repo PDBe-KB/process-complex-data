@@ -130,7 +130,7 @@ class TestProcessComplex(TestCase):
         self.bolt_uri = "neo4j://"
         self.csv_path = "test_path"
 
-    @patch("pdbe_complexes.utils.utility.run_query")
+    @patch("pdbe_complexes.utils.operations.Neo4jDatabaseOperations.run_query")
     def test_get_complex_portal_data(self, rq):
         complex_obj = Neo4JProcessComplex(
             self.bolt_uri,
@@ -150,7 +150,7 @@ class TestProcessComplex(TestCase):
             complex_obj.dict_complex_portal_entries, mock_dict_complex_portal_entries
         )
 
-    @patch("pdbe_complexes.utils.utility.run_query")
+    @patch("pdbe_complexes.utils.operations.Neo4jDatabaseOperations.run_query")
     def test_process_pdb_assembly_data(self, rq):
         complex_obj = Neo4JProcessComplex(
             self.bolt_uri,
@@ -167,7 +167,7 @@ class TestProcessComplex(TestCase):
         #     complex_obj.dict_complex_portal_entries, mock_dict_complex_portal_entries
         # )
 
-    @patch("pdbe_complexes.utils.utility.run_query")
+    @patch("pdbe_complexes.utils.operations.Neo4jDatabaseOperations.run_query")
     def test_use_persistent_identifier(self, rq):
         # Test whether the method return the correct pdb_complex_id based on mock data
         complex_obj = Neo4JProcessComplex(
