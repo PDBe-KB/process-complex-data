@@ -1,3 +1,4 @@
+import argparse
 import csv
 import hashlib
 import os
@@ -5,7 +6,6 @@ from collections import OrderedDict
 
 from pdbe_complexes import queries as qy
 from pdbe_complexes.log import logger
-from pdbe_complexes.utils import utility as ut
 from pdbe_complexes.utils.operations import Neo4jDatabaseOperations
 
 
@@ -17,7 +17,7 @@ class Neo4JProcessComplex:
 
     def __init__(self, bolt_uri, username, password, csv_path=None):
 
-        self.neo4j_info = (bolt_uri, username, password)
+        self.ndo = Neo4jDatabaseOperations((bolt_uri, username, password))
         self.csv_path = csv_path
         self.dict_complex_portal_id = {}
         self.dict_complex_portal_entries = {}
@@ -41,12 +41,10 @@ class Neo4JProcessComplex:
         """
 
         self.get_complex_portal_data()
-        # self.drop_PDBComplex_nodes()
+        self.drop_PDBComplex_nodes()
         self.get_reference_mapping()
         self.process_assembly_data()
-        # self.post_processing()
-        # self.create_subcomplex_relationships()
-        return self.reference_mapping
+        self.post_processing()
 
     def get_complex_portal_data(self):
         """
@@ -57,7 +55,7 @@ class Neo4JProcessComplex:
             none
         """
         logger.info("Start querying Complex Portal data")
-        mappings = ut.run_query(self.neo4j_info, qy.COMPLEX_PORTAL_DATA_QUERY)
+        mappings = self.ndo.run_query(qy.COMPLEX_PORTAL_DATA_QUERY)
         for row in mappings:
             accessions = row.get("uniq_accessions")
             complex_id = row.get("complex_id")
@@ -70,12 +68,12 @@ class Neo4JProcessComplex:
         """
         Drop any existing PDB complex nodes in the graph db
         """
-        return ut.run_query(self.neo4j_info, qy.DROP_PDB_COMPLEX_NODES_QUERY)
+        return self.ndo.run_query(qy.DROP_PDB_COMPLEX_NODES_QUERY)
 
     def get_reference_mapping(self, reference_filename="complexes_master.csv"):
         """
-        Store existing mapping of complex-composition strings to pdb_complex_ids
-        into a reference dictionary for lookup later
+        Store mapping of complex-composition strings to pdb_complex_ids
+        into a reference dictionary for lookup if available
 
         Args:
             reference_filename (str, optional): Reference mapping file. Defaults to
@@ -100,7 +98,7 @@ class Neo4JProcessComplex:
         Complex Portal data and processes them for use later.
         """
         logger.info("Start querying PDB Assembly data")
-        mappings = ut.run_query(self.neo4j_info, qy.PDB_ASSEMBLY_DATA_QUERY)
+        mappings = self.ndo.run_query(qy.PDB_ASSEMBLY_DATA_QUERY)
         for row in mappings:
             self._process_mapping(row)
 
@@ -252,9 +250,13 @@ class Neo4JProcessComplex:
 
     def post_processing(self):
         """
-        Create relationships between complexes related nodes in the
+        1. Create relationships between complexes related nodes in the
         graph db - Uniprot, PDBComplex, Entity, Rfam, Unmapped
         Polymer, Assembly and Complex
+
+        2. Drop existing subcomplex relationships
+
+        3. Create new subcomplex relationships
         """
         query_parameters = [
             (
@@ -301,17 +303,63 @@ class Neo4JProcessComplex:
             ),
         ]
 
-        ndo = Neo4jDatabaseOperations(self.neo4j_info)
         logger.info("Start creating relationships betweeen nodes")
         for params in query_parameters:
-            ndo._create_nodes_relationship(
+            self.ndo._create_nodes_relationship(
                 params[0], params[1], params[2], params[3], params[4]
             )
         logger.info("Done creating relationships between nodes")
 
-    def create_subcomplex_relationships(self):
-        """
-        Create subcomplex relationships in the graph db
-        """
-        logger.info("Creating subcomplex relationships")
-        return ut.run_query(self.neo4j_info, qy.CREATE_SUBCOMPLEX_RELATION_QUERY)
+        logger.info("Dropping existing subcomplex relationships if any")
+        self.ndo.run_query(qy.DROP_SUBCOMPLEX_RELATION_QUERY)
+
+        logger.info("Start creating subcomplex relationships")
+        self.ndo.run_query(qy.CREATE_SUBCOMPLEX_RELATION_QUERY)
+        logger.info("Done creating subcomplex relationships")
+
+
+def main():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "-b",
+        "--bolt-url",
+        required=True,
+        help="BOLT url",
+    )
+
+    parser.add_argument(
+        "-u",
+        "--username",
+        required=True,
+        help="DB username",
+    )
+
+    parser.add_argument(
+        "-p",
+        "--password",
+        required=True,
+        help="DB password",
+    )
+
+    parser.add_argument(
+        "-o",
+        "--csv-path",
+        required=True,
+        help="Path to output CSV file",
+    )
+
+    args = parser.parse_args()
+
+    complex = Neo4JProcessComplex(
+        bolt_uri=args.bolt_url,
+        username=args.username,
+        password=args.password,
+        csv_path=args.csv_path,
+    )
+
+    complex.run_process()
+
+
+if __name__ == "__main__":
+    main()
