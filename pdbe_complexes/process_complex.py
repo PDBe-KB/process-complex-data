@@ -1,4 +1,3 @@
-import argparse
 import csv
 import hashlib
 import os
@@ -350,50 +349,3 @@ class Neo4JProcessComplex:
         logger.info("Start creating subcomplex relationships")
         self.ndo.run_query(qy.CREATE_SUBCOMPLEX_RELATION_QUERY)
         logger.info("Done creating subcomplex relationships")
-
-
-def main():
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument(
-        "-b",
-        "--bolt-url",
-        required=True,
-        help="BOLT url",
-    )
-
-    parser.add_argument(
-        "-u",
-        "--username",
-        required=True,
-        help="DB username",
-    )
-
-    parser.add_argument(
-        "-p",
-        "--password",
-        required=True,
-        help="DB password",
-    )
-
-    parser.add_argument(
-        "-o",
-        "--csv-path",
-        required=True,
-        help="Path to output CSV file",
-    )
-
-    args = parser.parse_args()
-
-    complex = Neo4JProcessComplex(
-        bolt_uri=args.bolt_url,
-        username=args.username,
-        password=args.password,
-        csv_path=args.csv_path,
-    )
-
-    complex.run_process()
-
-
-if __name__ == "__main__":
-    main()
