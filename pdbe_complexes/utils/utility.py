@@ -59,6 +59,35 @@ def clean_files(
 #         logger.info(f"Filename {filename} has been copied to {dst}")
 
 
+def process_complex_names(complex_names):
+    flattened_name_list = [
+        [k, v["complex_name"], v["derived_complex_name"], v["complex_name_type"]]
+        for k, v in complex_names.items()
+    ]
+    df = pd.DataFrame(
+        flattened_name_list,
+        columns=[
+            "pdb_complex_id",
+            "complex_name",
+            "derived_complex_name",
+            "complex_name_type",
+        ],
+    )
+    df["complex_name_merged"] = df["complex_name"].fillna("") + df[
+        "derived_complex_name"
+    ].fillna("")
+    df.drop(["complex_name", "derived_complex_name"], axis=1, inplace=True)
+    df.rename({"complex_name_merged": "complex_name"}, axis=1, inplace=True)
+    pdb_complex_id_list = df["pdb_complex_id"].tolist()
+    complex_name_list = df["complex_name"].tolist()
+    complex_name_params_list = [
+        {"pdb_complex_id": x, "complex_name": y}
+        for x, y in zip(pdb_complex_id_list, complex_name_list)
+    ]
+    complex_name_dict = df.set_index("pdb_complex_id").T.to_dict()
+    return complex_name_params_list, complex_name_dict
+
+
 def merge_csv_files(
     csv_path, filename1="complexes_mapping.csv", filename2="complexes_name.csv"
 ):
@@ -76,13 +105,13 @@ def merge_csv_files(
     df1 = pd.read_csv(os.path.join(csv_path, filename1))
     df2 = pd.read_csv(os.path.join(csv_path, filename2))
     merged_df = df1.merge(df2, on="pdb_complex_id")
-    merged_df["complex_name_merged"] = (
-        merged_df["complex_name"]
-        .combine_first(merged_df["derived_complex_name"])
-        .astype(str)
-    )
-    merged_df.drop(["complex_name", "derived_complex_name"], axis=1, inplace=True)
-    merged_df.rename({"complex_name_merged": "complex_name"}, axis=1, inplace=True)
+    # merged_df["complex_name_merged"] = (
+    #     merged_df["complex_name"]
+    #     .combine_first(merged_df["derived_complex_name"])
+    #     .astype(str)
+    # )
+    # merged_df.drop(["complex_name", "derived_complex_name"], axis=1, inplace=True)
+    # merged_df.rename({"complex_name_merged": "complex_name"}, axis=1, inplace=True)
     df = merged_df.reindex(
         columns=[
             "md5_obj",
@@ -94,6 +123,6 @@ def merge_csv_files(
             "entries",
         ]
     )
-    df["complex_name"] = df["complex_name"].replace({"nan": ""})
+    # df["complex_name"] = df["complex_name"].replace({"nan": ""})
     df.to_csv(os.path.join(csv_path, output_filename), index=False)
     logger.info(f"Filename {output_filename} has been written to {csv_path}")
