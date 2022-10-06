@@ -72,7 +72,7 @@ def main():
     )
     complex.run_process()
     csv_params = (
-        complex.complex_name_dict,
+        complex.updated_complex_name_dict,
         "pdb_complex_id",
         headers_two,
         args.csv_path,
