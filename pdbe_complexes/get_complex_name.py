@@ -1,11 +1,14 @@
 from collections import Counter, OrderedDict
 
+from pdbe_complexes import queries as qy
 from pdbe_complexes.constants import name_exclude_list
 from pdbe_complexes.log import logger
+from pdbe_complexes.utils import utility as ut
 from pdbe_complexes.utils.get_annotated_name import GetAnnotatedName
 from pdbe_complexes.utils.get_data_from_complex_portal_ftp import GetComplexPortalData
 from pdbe_complexes.utils.get_data_from_graph_db import GetComplexData
 from pdbe_complexes.utils.get_derived_name import DeriveName
+from pdbe_complexes.utils.operations import Neo4jDatabaseOperations
 
 
 class ProcessComplexName:
@@ -21,6 +24,7 @@ class ProcessComplexName:
         self.username = username
         self.password = password
         self.neo4j_info = (bolt_uri, username, password)
+        self.ndo = Neo4jDatabaseOperations(self.neo4j_info)
         self.csv_path = csv_path
         self.complex_portal_path = complex_portal_path
         self.complex_data = {}
@@ -43,6 +47,7 @@ class ProcessComplexName:
         self._get_complex_portal_entries()
         self._get_pdb_complex_entries()
         self._process_complex_names()
+        self._post_processing()
 
     def _get_complex_portal_entries(self):
         """
@@ -680,3 +685,16 @@ class ProcessComplexName:
             for sub_name in name_list:
                 if sub_name.lower() not in name_exclude_list:
                     self.name_counter[sub_name] += 1
+
+    def _post_processing(self):
+        (
+            self.complex_name_params_list,
+            self.updated_complex_name_dict,
+        ) = ut.process_complex_names(self.complex_name_dict)
+        self.ndo._create_nodes_relationship(
+            qy.SET_COMPLEX_NAMES_QUERY,
+            "PDBComplex",
+            "PDBComplex",
+            "complex_name_params_list",
+            self.complex_name_params_list,
+        )

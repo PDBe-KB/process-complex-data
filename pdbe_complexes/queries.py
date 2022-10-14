@@ -6,6 +6,13 @@ MERGE (c:PDBComplex {COMPLEX_ID:row.complex_id})
 MERGE (c)<-[:IS_PART_OF_PDB_COMPLEX {STOICHIOMETRY:row.stoichiometry}]-(u)
 """
 
+SET_COMPLEX_NAMES_QUERY = """
+WITH $complex_name_params_list AS batch
+UNWIND batch AS row
+MATCH (p:PDBComplex {COMPLEX_ID:row.pdb_complex_id})
+SET p.COMPLEX_NAME = row.complex_name
+"""
+
 MERGE_ENTITY_QUERY = """
 WITH $entity_params_list AS batch
 UNWIND batch AS row
