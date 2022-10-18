@@ -31,6 +31,8 @@ class Neo4JProcessComplex:
         self.complex_params_list = []
         self.unmapped_polymer_params_list = []
         self.complexes_unique_to_complex_portal = []
+        self.existing_complexes_dict = {}
+        self.new_complexes_dict = {}
 
     def run_process(self):
         """
@@ -44,7 +46,12 @@ class Neo4JProcessComplex:
         # self.drop_PDBComplex_nodes()
         self.get_reference_mapping()
         self.process_assembly_data()
-        print(self.existing_complexes_dict)
+        print(
+            f"The length of the existing complex dict is {len(self.existing_complexes_dict)}"
+        )
+        print(
+            f"The length of the existing complex dict is {len(self.new_complexes_dict)}"
+        )
         # self.post_processing()
 
     def get_complex_portal_data(self):
@@ -171,8 +178,6 @@ class Neo4JProcessComplex:
     def _use_persistent_identifier(
         self, hash_str, accession, complex_portal_id, entries
     ):
-        self.existing_complexes_dict = {}
-        self.new_complexes_dict = {}
         """
         This method generates a new PDB complex ID if the complex composition
         is new and not present in reference_mapping. On the other hand, if it's
@@ -220,7 +225,7 @@ class Neo4JProcessComplex:
         #     }
         else:
             pdb_complex_id = None
-            self.new_complexes_dict = pdb_complex_id
+            self.new_complexes_dict[accession] = pdb_complex_id
         return pdb_complex_id
 
     def _process_uniq_assembly(self, pdb_complex_id, uniq_assembly):
