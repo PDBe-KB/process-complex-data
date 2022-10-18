@@ -1,3 +1,4 @@
+import argparse
 import csv
 import hashlib
 import os
@@ -39,11 +40,12 @@ class Neo4JProcessComplex:
             none
         """
 
-        self.get_complex_portal_data()
-        self.drop_PDBComplex_nodes()
+        # self.get_complex_portal_data()
+        # self.drop_PDBComplex_nodes()
         self.get_reference_mapping()
         self.process_assembly_data()
-        self.post_processing()
+        print(self.existing_complexes_dict)
+        # self.post_processing()
 
     def get_complex_portal_data(self):
         """
@@ -151,23 +153,26 @@ class Neo4JProcessComplex:
         pdb_complex_id = self._use_persistent_identifier(
             accession_hash, tmp_uniq_accessions, complex_portal_id, assemblies
         )
+        print(pdb_complex_id, tmp_uniq_accessions)
         # common complex; delete from dictionary else will be processed again
-        if complex_portal_id is not None:
-            del self.dict_complex_portal_id[tmp_uniq_accessions]
-            self.common_complexes.append((pdb_complex_id, complex_portal_id))
-        # keep data for each PDB complex in dict_pdb_complex to be used later
-        self.dict_pdb_complex[pdb_complex_id] = (
-            tmp_uniq_accessions,
-            assemblies,
-        )
-        for uniq_accession in uniq_accessions.split(","):
-            self._process_uniq_accession(pdb_complex_id, uniq_accession)
-        for uniq_assembly in assemblies.split(","):
-            self._process_uniq_assembly(pdb_complex_id, uniq_assembly)
+        # if complex_portal_id is not None:
+        #     del self.dict_complex_portal_id[tmp_uniq_accessions]
+        #     self.common_complexes.append((pdb_complex_id, complex_portal_id))
+        # # keep data for each PDB complex in dict_pdb_complex to be used later
+        # self.dict_pdb_complex[pdb_complex_id] = (
+        #     tmp_uniq_accessions,
+        #     assemblies,
+        # )
+        # for uniq_accession in uniq_accessions.split(","):
+        #     self._process_uniq_accession(pdb_complex_id, uniq_accession)
+        # for uniq_assembly in assemblies.split(","):
+        #     self._process_uniq_assembly(pdb_complex_id, uniq_assembly)
 
     def _use_persistent_identifier(
         self, hash_str, accession, complex_portal_id, entries
     ):
+        self.existing_complexes_dict = {}
+        self.new_complexes_dict = {}
         """
         This method generates a new PDB complex ID if the complex composition
         is new and not present in reference_mapping. On the other hand, if it's
@@ -183,35 +188,39 @@ class Neo4JProcessComplex:
             string: PDB Complex ID
         """
         pdb_complex_id = ""
-        basic_PDB_complex_str = "PDB-CPX-"
-        initial_num = 100001
+        # basic_PDB_complex_str = "PDB-CPX-"
+        # initial_num = 100001
         if hash_str in self.reference_mapping:
             pdb_complex_id = self.reference_mapping.get(hash_str).get("pdb_complex_id")
             self.reference_mapping[hash_str]["entries"] = entries
+            self.existing_complexes_dict[accession] = pdb_complex_id
         # when the dict is empty
-        elif len(self.reference_mapping) == 0:
-            pdb_complex_id = basic_PDB_complex_str + str(initial_num)
-            self.reference_mapping[hash_str] = {
-                "pdb_complex_id": pdb_complex_id,
-                "complex_portal_id": complex_portal_id,
-                "accession": accession,
-                "entries": entries,
-            }
-        # when the dict has one or more elems
-        elif len(self.reference_mapping) >= 1:
-            last_dict_key = next(reversed(self.reference_mapping))
-            last_pdb_complex_id = self.reference_mapping[last_dict_key][
-                "pdb_complex_id"
-            ]
-            _, _, last_pdb_complex_id_num = last_pdb_complex_id.split("-")
-            current_num = int(last_pdb_complex_id_num) + 1
-            pdb_complex_id = basic_PDB_complex_str + str(current_num)
-            self.reference_mapping[hash_str] = {
-                "pdb_complex_id": pdb_complex_id,
-                "complex_portal_id": complex_portal_id,
-                "accession": accession,
-                "entries": entries,
-            }
+        # elif len(self.reference_mapping) == 0:
+        #     pdb_complex_id = basic_PDB_complex_str + str(initial_num)
+        #     self.reference_mapping[hash_str] = {
+        #         "pdb_complex_id": pdb_complex_id,
+        #         "complex_portal_id": complex_portal_id,
+        #         "accession": accession,
+        #         "entries": entries,
+        #     }
+        # # when the dict has one or more elems
+        # elif len(self.reference_mapping) >= 1:
+        #     last_dict_key = next(reversed(self.reference_mapping))
+        #     last_pdb_complex_id = self.reference_mapping[last_dict_key][
+        #         "pdb_complex_id"
+        #     ]
+        #     _, _, last_pdb_complex_id_num = last_pdb_complex_id.split("-")
+        #     current_num = int(last_pdb_complex_id_num) + 1
+        #     pdb_complex_id = basic_PDB_complex_str + str(current_num)
+        #     self.reference_mapping[hash_str] = {
+        #         "pdb_complex_id": pdb_complex_id,
+        #         "complex_portal_id": complex_portal_id,
+        #         "accession": accession,
+        #         "entries": entries,
+        #     }
+        else:
+            pdb_complex_id = None
+            self.new_complexes_dict = pdb_complex_id
         return pdb_complex_id
 
     def _process_uniq_assembly(self, pdb_complex_id, uniq_assembly):
@@ -349,3 +358,45 @@ class Neo4JProcessComplex:
         logger.info("Start creating subcomplex relationships")
         self.ndo.run_query(qy.CREATE_SUBCOMPLEX_RELATION_QUERY)
         logger.info("Done creating subcomplex relationships")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "-b",
+        "--bolt-url",
+        required=True,
+        help="BOLT url",
+    )
+
+    parser.add_argument(
+        "-u",
+        "--username",
+        required=True,
+        help="DB username",
+    )
+
+    parser.add_argument(
+        "-p",
+        "--password",
+        required=True,
+        help="DB password",
+    )
+
+    parser.add_argument(
+        "-o",
+        "--csv-path",
+        required=True,
+        help="Path to output CSV file",
+    )
+
+    args = parser.parse_args()
+
+    complex = Neo4JProcessComplex(
+        bolt_uri=args.bolt_url,
+        username=args.username,
+        password=args.password,
+        csv_path=args.csv_path,
+    )
+    complex.run_process()
