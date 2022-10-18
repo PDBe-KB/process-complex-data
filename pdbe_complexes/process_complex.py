@@ -7,6 +7,7 @@ from collections import OrderedDict
 from pdbe_complexes import queries as qy
 from pdbe_complexes.log import logger
 from pdbe_complexes.utils.operations import Neo4jDatabaseOperations
+from pdbe_complexes.utils.utility import get_uniprot_mapping
 
 
 class Neo4JProcessComplex:
@@ -46,12 +47,13 @@ class Neo4JProcessComplex:
         # self.drop_PDBComplex_nodes()
         self.get_reference_mapping()
         self.process_assembly_data()
-        print(
-            f"The length of the existing complex dict is {len(self.existing_complexes_dict)}"
-        )
-        print(
-            f"The length of the existing complex dict is {len(self.new_complexes_dict)}"
-        )
+        # print(
+        #     f"The length of the existing complex dict is {len(self.existing_complexes_dict)}"
+        # )
+        # print(
+        #     f"The length of the new complex dict is {len(self.new_complexes_dict)}"
+        # )
+        self.process_uniprot_mapping()
         # self.post_processing()
 
     def get_complex_portal_data(self):
@@ -294,6 +296,21 @@ class Neo4JProcessComplex:
                 "complex_portal_id": str(complex_portal_id),
             }
         )
+
+    def process_uniprot_mapping(self):
+        logger.info("Start processing uniprot mapping")
+        uniprot_mapping_dict, obsolete_uniprot_accessions = get_uniprot_mapping()
+        complex_strings = list(self.existing_complexes_dict.keys())
+
+        complex_strings_with_changes = []
+        for complex_str in complex_strings:
+            for obsolete_accession in obsolete_uniprot_accessions:
+                if obsolete_accession in complex_str:
+                    complex_strings_with_changes.append(
+                        (complex_str, obsolete_accession)
+                    )
+
+        print(complex_strings_with_changes)
 
     def post_processing(self):
         """
