@@ -88,6 +88,19 @@ def process_complex_names(complex_names):
     return complex_name_params_list, complex_name_dict
 
 
+def get_uniprot_mapping():
+    uniprot_mapping_dict = {}
+    old_identifiers = []
+    # new_identifiers = []
+    with open("/Users/sria/desktop/uniprot_mapping.txt") as f:
+        for line in f:
+            old_identifier, _, new_identifier = line.strip().split(" ")
+            uniprot_mapping_dict[old_identifier] = new_identifier
+            old_identifiers.append(old_identifier)
+            # new_identifiers.append(new_identifier)
+    return uniprot_mapping_dict, old_identifiers
+
+
 def merge_csv_files(
     csv_path, filename1="complexes_mapping.csv", filename2="complexes_name.csv"
 ):
