@@ -2,6 +2,7 @@ import csv
 import os
 
 import pandas as pd
+import requests
 
 from pdbe_complexes.log import logger
 
@@ -90,27 +91,49 @@ def process_complex_names(complex_names):
 
 def get_uniprot_mapping():
     uniprot_mapping_dict = {}
-    old_identifiers = []
-    # new_identifiers = []
-    with open("/Users/sria/desktop/uniprot_mapping.txt") as f:
+    obsolete_uniprot_ids = []
+    with open("/Users/sria/desktop/uniprot_mapping_new.txt") as f:
         for line in f:
-            old_identifier, _, new_identifier = line.strip().split(" ")
-            uniprot_mapping_dict[old_identifier] = new_identifier
-            old_identifiers.append(old_identifier)
-            # new_identifiers.append(new_identifier)
-    return uniprot_mapping_dict, old_identifiers
+            obsolete_uniprot_id, _, new_uniprot_id = line.strip().split(" ")
+            uniprot_mapping_dict[obsolete_uniprot_id] = new_uniprot_id
+            obsolete_uniprot_ids.append(obsolete_uniprot_id)
+    return uniprot_mapping_dict, obsolete_uniprot_ids
+
+
+def find_complexes_with_obsolete_id(data, obselete_identifiers):
+    complexes_with_obselete_id = []
+    for complex_string in data:
+        for id in obselete_identifiers:
+            if id in complex_string:
+                complexes_with_obselete_id.append((complex_string, id))
+    return complexes_with_obselete_id
+
+
+def get_uniprot_taxid(identifier):
+    uniprot_base_url = "https://rest.uniprot.org/uniprotkb/"
+    uniprot_complete_url = f"{uniprot_base_url}/{identifier}"
+    response = requests.get(uniprot_complete_url).json()
+    return response["organism"]["taxonId"]
 
 
 def create_new_complex_string(data, uniprot_mapping):
     replaced_complex_strings = {}
-    for elem in data:
-        old_complex_string = elem[0]
-        obsolete_accession = elem[1]
+    for entry in data:
+        obsolete_complex_string = entry[0]
+        obsolete_accession = entry[1]
         new_accession = uniprot_mapping.get(obsolete_accession)
-        new_complex_string = old_complex_string.replace(
+        obsolete_accession_taxid = get_uniprot_taxid(obsolete_accession)
+        new_accession_taxid = get_uniprot_taxid(obsolete_accession)
+        new_complex_string = obsolete_complex_string.replace(
             obsolete_accession, new_accession
         )
-        replaced_complex_strings[old_complex_string] = new_complex_string
+        if obsolete_accession_taxid != new_accession_taxid:
+            obsolete_accession_taxid = "_" + str(obsolete_accession_taxid)
+            new_accession_taxid = "_" + str(new_accession_taxid)
+            new_complex_string = new_complex_string.replace(
+                obsolete_accession_taxid, new_accession_taxid
+            )
+        replaced_complex_strings[obsolete_complex_string] = new_complex_string
     return replaced_complex_strings
 
 
