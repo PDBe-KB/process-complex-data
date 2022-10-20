@@ -7,7 +7,7 @@ from collections import OrderedDict
 from pdbe_complexes import queries as qy
 from pdbe_complexes.log import logger
 from pdbe_complexes.utils.operations import Neo4jDatabaseOperations
-from pdbe_complexes.utils.utility import get_uniprot_mapping
+from pdbe_complexes.utils.utility import create_new_complex_string, get_uniprot_mapping
 
 
 class Neo4JProcessComplex:
@@ -298,19 +298,21 @@ class Neo4JProcessComplex:
         )
 
     def process_uniprot_mapping(self):
-        logger.info("Start processing uniprot mapping")
+        logger.info("Start processing UniProt mapping")
         uniprot_mapping_dict, obsolete_uniprot_accessions = get_uniprot_mapping()
         complex_strings = list(self.existing_complexes_dict.keys())
 
         complex_strings_with_changes = []
-        for complex_str in complex_strings:
+        for complex_string in complex_strings:
             for obsolete_accession in obsolete_uniprot_accessions:
-                if obsolete_accession in complex_str:
+                if obsolete_accession in complex_string:
                     complex_strings_with_changes.append(
-                        (complex_str, obsolete_accession)
+                        (complex_string, obsolete_accession)
                     )
-
-        print(complex_strings_with_changes)
+        replaced_complex_strings = create_new_complex_string(
+            complex_strings_with_changes, uniprot_mapping_dict
+        )
+        print(replaced_complex_strings)
 
     def post_processing(self):
         """
