@@ -16,9 +16,7 @@ class Neo4JProcessComplex:
     and to create persistent, unique complex identifiers
     """
 
-    def __init__(
-        self, bolt_uri, username, password, uniprot_mapping_path, csv_path=None
-    ):
+    def __init__(self, bolt_uri, username, password, csv_path, uniprot_mapping_path):
 
         self.ndo = Neo4jDatabaseOperations((bolt_uri, username, password))
         self.csv_path = csv_path
