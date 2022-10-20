@@ -101,6 +101,19 @@ def get_uniprot_mapping():
     return uniprot_mapping_dict, old_identifiers
 
 
+def create_new_complex_string(data, uniprot_mapping):
+    replaced_complex_strings = {}
+    for elem in data:
+        old_complex_string = elem[0]
+        obsolete_accession = elem[1]
+        new_accession = uniprot_mapping.get(obsolete_accession)
+        new_complex_string = old_complex_string.replace(
+            obsolete_accession, new_accession
+        )
+        replaced_complex_strings[old_complex_string] = new_complex_string
+    return replaced_complex_strings
+
+
 def merge_csv_files(
     csv_path, filename1="complexes_mapping.csv", filename2="complexes_name.csv"
 ):
