@@ -89,10 +89,19 @@ def process_complex_names(complex_names):
     return complex_name_params_list, complex_name_dict
 
 
-def get_uniprot_mapping():
+def get_uniprot_mapping(dir_path):
     uniprot_mapping_dict = {}
     obsolete_uniprot_ids = []
-    with open("/Users/sria/desktop/uniprot_mapping_new.txt") as f:
+    filenames = []
+    for path in os.scandir(dir_path):
+        if path.is_file() and path.name.startswith("secondary_updates_"):
+            filenames.append(path.name)
+
+    filenames.sort()
+    current_mapping_filename = filenames[-1]
+    complete_file_path = os.path.join(dir_path, current_mapping_filename)
+
+    with open(complete_file_path) as f:
         for line in f:
             obsolete_uniprot_id, _, new_uniprot_id = line.strip().split(" ")
             uniprot_mapping_dict[obsolete_uniprot_id] = new_uniprot_id
