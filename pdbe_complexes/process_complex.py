@@ -16,10 +16,13 @@ class Neo4JProcessComplex:
     and to create persistent, unique complex identifiers
     """
 
-    def __init__(self, bolt_uri, username, password, csv_path=None):
+    def __init__(
+        self, bolt_uri, username, password, uniprot_mapping_path, csv_path=None
+    ):
 
         self.ndo = Neo4jDatabaseOperations((bolt_uri, username, password))
         self.csv_path = csv_path
+        self.uniprot_mapping_path = uniprot_mapping_path
         self.dict_complex_portal_id = {}
         self.dict_complex_portal_entries = {}
         self.dict_pdb_complex = {}
@@ -313,7 +316,9 @@ class Neo4JProcessComplex:
 
     def correct_uniprot_mapping(self):
         logger.info("Start correcting obsolete UniProt mapping for complexes if any")
-        uniprot_mapping_dict, obsolete_uniprot_ids = ut.get_uniprot_mapping()
+        uniprot_mapping_dict, obsolete_uniprot_ids = ut.get_uniprot_mapping(
+            self.uniprot_mapping_path
+        )
         complex_strings = [
             entry["accession"] for _, entry in self.reference_mapping.items()
         ]
@@ -423,7 +428,14 @@ if __name__ == "__main__":
         "-o",
         "--csv-path",
         required=True,
-        help="Path to output CSV file",
+        help="Path to the dir where the output CSV file should be created",
+    )
+
+    parser.add_argument(
+        "-m",
+        "--uniprot-mapping-path",
+        required=True,
+        help="Path to the dir where the UniProt mapping text file is located",
     )
 
     args = parser.parse_args()
@@ -433,5 +445,6 @@ if __name__ == "__main__":
         username=args.username,
         password=args.password,
         csv_path=args.csv_path,
+        uniprot_mapping_path=args.uniprot_mapping_path,
     )
     complex.run_process()
