@@ -109,41 +109,91 @@ def get_uniprot_mapping(dir_path):
     return uniprot_mapping_dict, obsolete_uniprot_ids
 
 
-def find_complexes_with_obsolete_id(data, obselete_identifiers):
+def find_complexes_with_obsolete_id(data, obselete_accessions):
     complexes_with_obselete_id = []
     for complex_string in data:
-        for id in obselete_identifiers:
-            if id in complex_string:
-                complexes_with_obselete_id.append((complex_string, id))
+        for accession in obselete_accessions:
+            if accession in complex_string:
+                complexes_with_obselete_id.append((complex_string, accession))
     return complexes_with_obselete_id
 
 
-def get_uniprot_taxid(identifier):
+def get_uniprot_taxid(accession):
     uniprot_base_url = "https://rest.uniprot.org/uniprotkb/"
-    uniprot_complete_url = f"{uniprot_base_url}/{identifier}"
+    uniprot_complete_url = f"{uniprot_base_url}/{accession}"
     response = requests.get(uniprot_complete_url).json()
-    return response["organism"]["taxonId"]
+    if "organism" in response:
+        return response["organism"]["taxonId"]
 
 
 def create_new_complex_string(data, uniprot_mapping):
     replaced_complex_strings = {}
     for entry in data:
-        obsolete_complex_string = entry[0]
-        obsolete_accession = entry[1]
+        tmp_list = []
+        separator = ","
+        obsolete_complex_string, obsolete_accession = entry[0], entry[1]
         new_accession = uniprot_mapping.get(obsolete_accession)
-        obsolete_accession_taxid = get_uniprot_taxid(obsolete_accession)
-        new_accession_taxid = get_uniprot_taxid(obsolete_accession)
-        new_complex_string = obsolete_complex_string.replace(
-            obsolete_accession, new_accession
-        )
-        if obsolete_accession_taxid != new_accession_taxid:
-            obsolete_accession_taxid = "_" + str(obsolete_accession_taxid)
-            new_accession_taxid = "_" + str(new_accession_taxid)
-            new_complex_string = new_complex_string.replace(
-                obsolete_accession_taxid, new_accession_taxid
+        if separator in obsolete_complex_string:
+            obsolete_complex_string_components = obsolete_complex_string.split(
+                separator
             )
-        replaced_complex_strings[obsolete_complex_string] = new_complex_string
+            for obsolete_complex_string_component in obsolete_complex_string_components:
+                if obsolete_accession in obsolete_complex_string_component:
+                    new_complex_string_component = (
+                        obsolete_complex_string_component.replace(
+                            obsolete_accession, new_accession
+                        )
+                    )
+                    obsolete_accession_taxid, new_accession_taxid = get_uniprot_taxids(
+                        new_accession, obsolete_complex_string_component
+                    )
+                    new_complex_string_component = update_uniprot_taxids(
+                        obsolete_accession_taxid,
+                        new_accession_taxid,
+                        new_complex_string_component,
+                    )
+                    tmp_list.append(new_complex_string_component)
+                else:
+                    tmp_list.append(obsolete_complex_string_component)
+            replaced_complex_strings[obsolete_complex_string] = ",".join(tmp_list)
+        else:
+            new_complex_string = obsolete_complex_string.replace(
+                obsolete_accession, new_accession
+            )
+            obsolete_accession_taxid, new_accession_taxid = get_uniprot_taxids(
+                new_accession, new_complex_string
+            )
+            new_complex_string_component = update_uniprot_taxids(
+                obsolete_accession_taxid, new_accession_taxid, new_complex_string
+            )
+            replaced_complex_strings[
+                obsolete_complex_string
+            ] = new_complex_string_component
     return replaced_complex_strings
+
+
+def get_uniprot_taxids(new_accession, complex_string_component):
+    obsolete_accession_taxid = complex_string_component.split("_")[-1]
+    new_accession_taxid = get_uniprot_taxid(new_accession)
+    return obsolete_accession_taxid, new_accession_taxid
+
+
+def update_uniprot_taxids(
+    obsolete_accession_taxid, new_accession_taxid, complex_string_component
+):
+    if obsolete_accession_taxid != new_accession_taxid:
+        obsolete_accession_taxid, new_accession_taxid = format_uniprot_taxid(
+            obsolete_accession_taxid, new_accession_taxid
+        )
+        return complex_string_component.replace(
+            f"_{obsolete_accession_taxid}", f"_{new_accession_taxid}"
+        )
+    else:
+        return complex_string_component
+
+
+def format_uniprot_taxid(obsolete_accession_taxid, new_accession_taxid):
+    return f"_{obsolete_accession_taxid}", f"_{new_accession_taxid}"
 
 
 def merge_csv_files(
