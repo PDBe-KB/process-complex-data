@@ -90,6 +90,16 @@ def process_complex_names(complex_names):
 
 
 def get_uniprot_mapping(dir_path):
+    """
+    Reads the latest file containing the mapping of obsolete to new
+    UniProt ids and returns the mapped dict
+
+    Args:
+        dir_path (str): The path to the SIFTS report dir
+
+    Returns:
+        dict: mapping of obsolete UniProt ids (key) to the new ones (value)
+    """
     uniprot_mapping_dict = {}
     obsolete_uniprot_ids = []
     filenames = []
@@ -110,6 +120,17 @@ def get_uniprot_mapping(dir_path):
 
 
 def find_complexes_with_obsolete_id(data, obselete_accessions):
+    """
+    Finds the complex strings containing obselete UniProt id
+
+    Args:
+        data (list): a list of complex strings
+        obselete_accessions (list): a list of obselete UniProt ids
+
+    Returns:
+        list of tuples: the first element of tuple is the complex string containing obsolete
+                        UniProt accession while the second element is the obsolete accession
+    """
     complexes_with_obselete_id = []
     for complex_string in data:
         for accession in obselete_accessions:
@@ -119,6 +140,15 @@ def find_complexes_with_obsolete_id(data, obselete_accessions):
 
 
 def get_uniprot_taxid(accession):
+    """
+    Returns the taxid for a given UniProt accession
+
+    Args:
+        accession (str): UniProt accession
+
+    Returns:
+        string: UniProt taxid
+    """
     uniprot_base_url = "https://rest.uniprot.org/uniprotkb/"
     uniprot_complete_url = f"{uniprot_base_url}/{accession}"
     response = requests.get(uniprot_complete_url).json()
@@ -127,6 +157,21 @@ def get_uniprot_taxid(accession):
 
 
 def create_new_complex_string(data, uniprot_mapping):
+    """
+    Create new complex string with the most current UniProt accession/taxid and returns a
+    dict containing the mapping of old complex strings (with obsolete accession) to new
+    complex strings
+
+    Args:
+        data (list of tuples): the first element of tuple is the complex string containing
+                               obsolete UniProt accession while the second element is the
+                               obsolete accession
+        uniprot_mapping (dict): mapping of obsolete UniProt accessions (key) to the latest
+                                ones (value)
+
+    Returns:
+        dict: mapping of complex strings (with obsolete accession) to new complex strings
+    """
     replaced_complex_strings = {}
     for entry in data:
         tmp_list = []
@@ -173,6 +218,18 @@ def create_new_complex_string(data, uniprot_mapping):
 
 
 def get_uniprot_taxids(new_accession, complex_string_component):
+    """
+    Returns the UniProt taxid for both the obsolete and new UniProt
+    accessions
+
+    Args:
+        new_accession (string): the new UniProt accession
+        complex_string_component (string): complex string per component
+                                           (exp: A0A010_2_67581)
+
+    Returns:
+        string: taxid for both the obsolete and new UniProt accessions
+    """
     obsolete_accession_taxid = complex_string_component.split("_")[-1]
     new_accession_taxid = get_uniprot_taxid(new_accession)
     return obsolete_accession_taxid, new_accession_taxid
@@ -181,6 +238,19 @@ def get_uniprot_taxids(new_accession, complex_string_component):
 def update_uniprot_taxids(
     obsolete_accession_taxid, new_accession_taxid, complex_string_component
 ):
+    """
+    Checks whether the obsolete UniProt accession and the new accession have
+    the same taxid. If not, replace the taxid in the complex string to the
+    latest one.
+
+    Args:
+        obsolete_accession_taxid (string): taxid of the obsolete UniProt accession
+        new_accession_taxid (string): taxid of the new UniProt accession
+        complex_string_component (string): complex string
+
+    Returns:
+        string: complex string with the updated taxid if any
+    """
     if obsolete_accession_taxid != new_accession_taxid:
         obsolete_accession_taxid, new_accession_taxid = format_uniprot_taxid(
             obsolete_accession_taxid, new_accession_taxid
@@ -193,6 +263,16 @@ def update_uniprot_taxids(
 
 
 def format_uniprot_taxid(obsolete_accession_taxid, new_accession_taxid):
+    """
+    Formats the UniProt taxids to be replaced in the complex string
+
+    Args:
+        obsolete_accession_taxid (string): taxid of the obsolete UniProt accession
+        new_accession_taxid (string): taxid of the new UniProt accession
+
+    Returns:
+        string: formatted taxid for both the obsolete and new UniProt accessions
+    """
     return f"_{obsolete_accession_taxid}", f"_{new_accession_taxid}"
 
 
