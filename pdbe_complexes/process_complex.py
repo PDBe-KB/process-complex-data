@@ -313,6 +313,9 @@ class Neo4JProcessComplex:
         )
 
     def correct_uniprot_mapping(self):
+        """
+        Primary method to handle changes in the UniProt accession within the complex string
+        """
         logger.info("Start correcting obsolete UniProt mapping for complexes if any")
         uniprot_mapping_dict, obsolete_uniprot_ids = ut.get_uniprot_mapping(
             self.uniprot_mapping_path
