@@ -320,13 +320,18 @@ class Neo4JProcessComplex:
         complex_strings = [
             entry["accession"] for _, entry in self.reference_mapping.items()
         ]
+        print(f"Len of self ref mapping is: {len(self.reference_mapping)}")
+        print(f"Len of complex string list is: {len(complex_strings)}")
+        print(f"Len of uniprot obsolete ids list is: {len(obsolete_uniprot_ids)}")
         complexes_with_obsolete_id = ut.find_complexes_with_obsolete_id(
             complex_strings, obsolete_uniprot_ids
         )
         updated_complex_strings = ut.create_new_complex_string(
             complexes_with_obsolete_id, uniprot_mapping_dict
         )
+        print(updated_complex_strings)
         self.update_reference_mapping(updated_complex_strings)
+        print(f"Len of self ref mapping is: {len(self.reference_mapping)}")
 
     def post_processing(self):
         """
