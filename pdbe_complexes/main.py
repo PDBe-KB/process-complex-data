@@ -39,6 +39,13 @@ def main():
     )
 
     parser.add_argument(
+        "-m",
+        "--uniprot-mapping-path",
+        required=True,
+        help="Path to the dir where the UniProt mapping text file is located",
+    )
+
+    parser.add_argument(
         "-i",
         "--complex-portal-path",
         required=True,
@@ -52,6 +59,7 @@ def main():
         username=args.username,
         password=args.password,
         csv_path=args.csv_path,
+        uniprot_mapping_path=args.uniprot_mapping_path,
     )
     complex.run_process()
     csv_params = (
