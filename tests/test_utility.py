@@ -1,9 +1,10 @@
 import os
 from pathlib import Path
 from unittest import TestCase
+from unittest.mock import patch
 
 from pdbe_complexes.constants import complex_mapping_headers as csv_headers
-from pdbe_complexes.utils.utility import export_csv, merge_csv_files
+from pdbe_complexes.utils import utility as ut
 
 mock_data = {
     "a9f2c6e982b417463bc093e6b83c278b": {
@@ -26,6 +27,28 @@ mock_data = {
     },
 }
 
+mock_uniprot_mapping = {
+    "Q59FX0": "O95271",
+    "A0A0K1NSD0": "A0A0B6EJR6",
+    "A0A0F7JCM0": "A0A0C5PTY3",
+}
+
+mock_obsolete_uniprots = ["Q59FX0", "A0A0K1NSD0", "A0A0F7JCM0"]
+
+mock_reference_mapping = {
+    "pdb_complex_id": "PDB-CPX-164129",
+    "complex_portal_id": "",
+    "accession": "Q59FX0_1_9606",
+    "entries": "7kkp_2,7kkq_1,7kko_1,7kkn_1,7kkm_1",
+}
+
+mock_complex_strings = [
+    "Q59FX0_1_9606",
+    "A0A003_2_67581",
+    "Q95TS5_1_7227,Q9VAH9_1_7227,Q9W3E1_1_7227",
+    "A0A003_2_67581,Q59FX0_1_9606",
+]
+
 
 class TestCaseBase(TestCase):
     def assertIsFile(self, path):
@@ -47,13 +70,80 @@ class TestUtility(TestCaseBase):
     #     data = self.ndo.run_query(self.query)
     #     self.assertTrue(data)
 
+    def test_get_uniprot_mapping(self):
+        """
+        Test if the method reads the UniProt mapping text file correctly
+        """
+        base_path = Path.cwd()
+        mock_test_filepath = base_path.joinpath("tests").joinpath("data")
+        mapping_uniprot_dict, obsolete_uniprot_accessions = ut.get_uniprot_mapping(
+            mock_test_filepath
+        )
+
+        self.assertDictEqual(
+            mapping_uniprot_dict,
+            {
+                "Q59FX0": "O95271",
+                "A0A0K1NSD0": "A0A0B6EJR6",
+                "A0A0F7JCM0": "A0A0C5PTY3",
+            },
+        )
+        self.assertListEqual(
+            obsolete_uniprot_accessions, ["Q59FX0", "A0A0K1NSD0", "A0A0F7JCM0"]
+        )
+
+    @patch("pdbe_complexes.utils.utility.get_uniprot_taxid")
+    def test_get_uniprot_taxid(self, rq):
+        """
+        Test if the method returns the correct taxid for the given
+        UniProt accession
+        """
+        rq.return_value = "9606"
+
+        taxid = ut.get_uniprot_taxid("O95271")
+        self.assertEqual(taxid, "9606")
+
+    def test_find_complexes_with_obsolete_id(self):
+        """
+        Test if the method finds the complex string containing obsolete
+        UniProt accessions
+        """
+        complexes_with_obsolete_id = ut.find_complexes_with_obsolete_id(
+            mock_complex_strings, mock_obsolete_uniprots
+        )
+        self.assertEqual(
+            complexes_with_obsolete_id,
+            [("Q59FX0_1_9606", "Q59FX0"), ("A0A003_2_67581,Q59FX0_1_9606", "Q59FX0")],
+        )
+
+    def test_create_new_complex_string(self):
+        """
+        Test if the method creates the correct complex string based on updated
+        UniProt accession
+        """
+        # single complex component
+        updated_complex_strings = ut.create_new_complex_string(
+            [("Q59FX0_1_9606", "Q59FX0")], mock_uniprot_mapping
+        )
+        self.assertDictEqual(
+            updated_complex_strings, {"Q59FX0_1_9606": "O95271_1_9606"}
+        )
+        # multiple complex components
+        updated_complex_strings = ut.create_new_complex_string(
+            [("A0A003_2_67581,Q59FX0_1_9606", "Q59FX0")], mock_uniprot_mapping
+        )
+        self.assertDictEqual(
+            updated_complex_strings,
+            {"A0A003_2_67581,Q59FX0_1_9606": "A0A003_2_67581,O95271_1_9606"},
+        )
+
     def test_merge_csv_files(self):
         "Test if the merge_csv_files method creates a file"
         base_path = Path.cwd()
         mock_files_path = base_path.joinpath("tests").joinpath("data")
         filename1 = "mock_complexes_mapping.csv"
         filename2 = "mock_complexes_name.csv"
-        merge_csv_files(mock_files_path, filename1, filename2)
+        ut.merge_csv_files(mock_files_path, filename1, filename2)
         path = Path(mock_files_path.joinpath("complexes_master.csv"))
 
         if path:
@@ -67,7 +157,7 @@ class TestUtility(TestCaseBase):
         output_file_path = base_path.joinpath("tests").joinpath("data")
         filename = "mock_complexes_mapping_example.csv"
         csv_params = (mock_data, "md5_obj", csv_headers, output_file_path, filename)
-        export_csv(csv_params)
+        ut.export_csv(csv_params)
         path = Path(output_file_path.joinpath(filename))
 
         if path:

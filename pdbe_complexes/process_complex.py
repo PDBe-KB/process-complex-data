@@ -5,6 +5,7 @@ from collections import OrderedDict
 
 from pdbe_complexes import queries as qy
 from pdbe_complexes.log import logger
+from pdbe_complexes.utils import utility as ut
 from pdbe_complexes.utils.operations import Neo4jDatabaseOperations
 
 
@@ -14,10 +15,11 @@ class Neo4JProcessComplex:
     and to create persistent, unique complex identifiers
     """
 
-    def __init__(self, bolt_uri, username, password, csv_path=None):
+    def __init__(self, bolt_uri, username, password, csv_path, uniprot_mapping_path):
 
         self.ndo = Neo4jDatabaseOperations((bolt_uri, username, password))
         self.csv_path = csv_path
+        self.uniprot_mapping_path = uniprot_mapping_path
         self.dict_complex_portal_id = {}
         self.dict_complex_portal_entries = {}
         self.dict_pdb_complex = {}
@@ -30,6 +32,9 @@ class Neo4JProcessComplex:
         self.complex_params_list = []
         self.unmapped_polymer_params_list = []
         self.complexes_unique_to_complex_portal = []
+        self.existing_complexes_dict = {}
+        self.new_complexes_dict = {}
+        self.has_REFERENCE_MAPPING = False
 
     def run_process(self):
         """
@@ -42,6 +47,8 @@ class Neo4JProcessComplex:
         self.get_complex_portal_data()
         self.drop_PDBComplex_nodes()
         self.get_reference_mapping()
+        if self.has_REFERENCE_MAPPING:
+            self.correct_uniprot_mapping()
         self.process_assembly_data()
         self.post_processing()
 
@@ -90,6 +97,31 @@ class Neo4JProcessComplex:
                         "accession": row["accession"],
                         "entries": row["entries"],
                     }
+                self.has_REFERENCE_MAPPING = True
+
+    def update_reference_mapping(self, updated_complex_strings):
+        for (
+            obsolete_complex_string,
+            new_complex_string,
+        ) in updated_complex_strings.items():
+            obsolete_complex_hash = hashlib.md5(
+                obsolete_complex_string.encode("utf-8")
+            ).hexdigest()
+            new_complex_hash = hashlib.md5(
+                new_complex_string.encode("utf-8")
+            ).hexdigest()
+            if new_complex_hash not in self.reference_mapping:
+                self.reference_mapping[new_complex_hash] = {
+                    "pdb_complex_id": self.reference_mapping[obsolete_complex_hash][
+                        "pdb_complex_id"
+                    ],
+                    "complex_portal_id": self.reference_mapping[obsolete_complex_hash][
+                        "complex_portal_id"
+                    ],
+                    "accession": new_complex_string,
+                    "entries": self.reference_mapping[obsolete_complex_hash]["entries"],
+                }
+            del self.reference_mapping[obsolete_complex_hash]
 
     def _process_remaining_complex_portal_entries(self, accessions):
         """
@@ -188,6 +220,7 @@ class Neo4JProcessComplex:
         if hash_str in self.reference_mapping:
             pdb_complex_id = self.reference_mapping.get(hash_str).get("pdb_complex_id")
             self.reference_mapping[hash_str]["entries"] = entries
+            self.existing_complexes_dict[accession] = pdb_complex_id
         # when the dict is empty
         elif len(self.reference_mapping) == 0:
             pdb_complex_id = basic_PDB_complex_str + str(initial_num)
@@ -280,6 +313,26 @@ class Neo4JProcessComplex:
                 "complex_portal_id": str(complex_portal_id),
             }
         )
+
+    def correct_uniprot_mapping(self):
+        """
+        Primary method to handle changes in the UniProt accession within the complex string
+        """
+        logger.info("Start correcting obsolete UniProt mapping for complexes if any")
+        uniprot_mapping_dict, obsolete_uniprot_ids = ut.get_uniprot_mapping(
+            self.uniprot_mapping_path
+        )
+        complex_strings = [
+            entry["accession"] for _, entry in self.reference_mapping.items()
+        ]
+        complexes_with_obsolete_id = ut.find_complexes_with_obsolete_id(
+            complex_strings, obsolete_uniprot_ids
+        )
+        updated_complex_strings = ut.create_new_complex_string(
+            complexes_with_obsolete_id, uniprot_mapping_dict
+        )
+        logger.info(f"The updated complex strings are: {updated_complex_strings}")
+        self.update_reference_mapping(updated_complex_strings)
 
     def post_processing(self):
         """

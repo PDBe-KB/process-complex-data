@@ -128,7 +128,8 @@ class TestProcessComplex(TestCase):
         self.username = "mock_username"
         self.password = "mock_password"
         self.bolt_uri = "neo4j://"
-        self.csv_path = "test_path"
+        self.csv_path = "test_csv_path"
+        self.uniprot_mapping_path = "test_uniprot_path"
 
     @patch("pdbe_complexes.utils.operations.Neo4jDatabaseOperations.run_query")
     def test_get_complex_portal_data(self, rq):
@@ -137,6 +138,7 @@ class TestProcessComplex(TestCase):
             self.username,
             self.password,
             self.csv_path,
+            self.uniprot_mapping_path,
         )
         rq.return_value = mock_complex_portal_data
         # print(rq.return_value)
@@ -157,6 +159,7 @@ class TestProcessComplex(TestCase):
             self.username,
             self.password,
             self.csv_path,
+            self.uniprot_mapping_path,
         )
         rq.return_value = mock_pdb_assembly_data
         # print(rq.return_value)
@@ -175,6 +178,7 @@ class TestProcessComplex(TestCase):
             self.username,
             self.password,
             self.csv_path,
+            self.uniprot_mapping_path,
         )
         rq.return_value = mock_pdb_assembly_data
         complex_obj.process_assembly_data()
