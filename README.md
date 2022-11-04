@@ -27,7 +27,7 @@ pip install -r requirements.txt
 ### Basic usage
 
 ```shell
-python pdbe_complexes/main.py -b <bolt_url> -u <username> -p <password> -o <output_csv_path> -i <complex_portal_path>`
+python pdbe_complexes/main.py -b <bolt_url> -u <username> -p <password> -o <output_csv_path> -m <UniProt_mapping_path> -i <complex_portal_path>`
 ```
 
 A short explanation for each command line argument is given below:
@@ -36,6 +36,7 @@ A short explanation for each command line argument is given below:
 - `username` = Neo4j username
 - `password` = Neo4j password
 - `output_csv_path` = The path to the output CSV file
+- `UniProt_mapping_path` = The path to the dir containing the UniProt mapping file
 - `complex_portal_path` = The path to the Complex Portal FTP site
 
 The manually curated complexes CSV files (`complexes_molecules.csv`, `complexes_components.csv`) are provided by Romana Gaborova, EMBL-EBI.
