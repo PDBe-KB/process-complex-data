@@ -1,4 +1,3 @@
-import argparse
 import csv
 import hashlib
 import os
@@ -35,6 +34,7 @@ class Neo4JProcessComplex:
         self.complexes_unique_to_complex_portal = []
         self.existing_complexes_dict = {}
         self.new_complexes_dict = {}
+        self.has_REFERENCE_MAPPING = False
 
     def run_process(self):
         """
@@ -44,12 +44,13 @@ class Neo4JProcessComplex:
             none
         """
 
-        # self.get_complex_portal_data()
-        # self.drop_PDBComplex_nodes()
+        self.get_complex_portal_data()
+        self.drop_PDBComplex_nodes()
         self.get_reference_mapping()
-        self.correct_uniprot_mapping()
-        # self.process_assembly_data()
-        # self.post_processing()
+        if self.has_REFERENCE_MAPPING:
+            self.correct_uniprot_mapping()
+        self.process_assembly_data()
+        self.post_processing()
 
     def get_complex_portal_data(self):
         """
@@ -96,6 +97,7 @@ class Neo4JProcessComplex:
                         "accession": row["accession"],
                         "entries": row["entries"],
                     }
+                self.has_REFERENCE_MAPPING = True
 
     def update_reference_mapping(self, updated_complex_strings):
         for (
@@ -323,18 +325,14 @@ class Neo4JProcessComplex:
         complex_strings = [
             entry["accession"] for _, entry in self.reference_mapping.items()
         ]
-        print(f"Len of self ref mapping is: {len(self.reference_mapping)}")
-        print(f"Len of complex string list is: {len(complex_strings)}")
-        print(f"Len of uniprot obsolete ids list is: {len(obsolete_uniprot_ids)}")
         complexes_with_obsolete_id = ut.find_complexes_with_obsolete_id(
             complex_strings, obsolete_uniprot_ids
         )
         updated_complex_strings = ut.create_new_complex_string(
             complexes_with_obsolete_id, uniprot_mapping_dict
         )
-        print(updated_complex_strings)
+        logger.info(f"The updated complex strings are: {updated_complex_strings}")
         self.update_reference_mapping(updated_complex_strings)
-        print(f"Len of self ref mapping is: {len(self.reference_mapping)}")
 
     def post_processing(self):
         """
@@ -404,53 +402,3 @@ class Neo4JProcessComplex:
         logger.info("Start creating subcomplex relationships")
         self.ndo.run_query(qy.CREATE_SUBCOMPLEX_RELATION_QUERY)
         logger.info("Done creating subcomplex relationships")
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument(
-        "-b",
-        "--bolt-url",
-        required=True,
-        help="BOLT url",
-    )
-
-    parser.add_argument(
-        "-u",
-        "--username",
-        required=True,
-        help="DB username",
-    )
-
-    parser.add_argument(
-        "-p",
-        "--password",
-        required=True,
-        help="DB password",
-    )
-
-    parser.add_argument(
-        "-o",
-        "--csv-path",
-        required=True,
-        help="Path to the dir where the output CSV file should be created",
-    )
-
-    parser.add_argument(
-        "-m",
-        "--uniprot-mapping-path",
-        required=True,
-        help="Path to the dir where the UniProt mapping text file is located",
-    )
-
-    args = parser.parse_args()
-
-    complex = Neo4JProcessComplex(
-        bolt_uri=args.bolt_url,
-        username=args.username,
-        password=args.password,
-        csv_path=args.csv_path,
-        uniprot_mapping_path=args.uniprot_mapping_path,
-    )
-    complex.run_process()
