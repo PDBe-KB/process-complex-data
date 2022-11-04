@@ -46,6 +46,7 @@ mock_complex_strings = [
     "Q59FX0_1_9606",
     "A0A003_2_67581",
     "Q95TS5_1_7227,Q9VAH9_1_7227,Q9W3E1_1_7227",
+    "A0A003_2_67581,Q59FX0_1_9606",
 ]
 
 
@@ -70,7 +71,9 @@ class TestUtility(TestCaseBase):
     #     self.assertTrue(data)
 
     def test_get_uniprot_mapping(self):
-
+        """
+        Test if the method reads the UniProt mapping text file correctly
+        """
         base_path = Path.cwd()
         mock_test_filepath = base_path.joinpath("tests").joinpath("data")
         mapping_uniprot_dict, obsolete_uniprot_accessions = ut.get_uniprot_mapping(
@@ -91,23 +94,47 @@ class TestUtility(TestCaseBase):
 
     @patch("pdbe_complexes.utils.utility.get_uniprot_taxid")
     def test_get_uniprot_taxid(self, rq):
+        """
+        Test if the method returns the correct taxid for the given
+        UniProt accession
+        """
         rq.return_value = "9606"
 
         taxid = ut.get_uniprot_taxid("O95271")
         self.assertEqual(taxid, "9606")
 
     def test_find_complexes_with_obsolete_id(self):
+        """
+        Test if the method finds the complex string containing obsolete
+        UniProt accessions
+        """
         complexes_with_obsolete_id = ut.find_complexes_with_obsolete_id(
             mock_complex_strings, mock_obsolete_uniprots
         )
-        self.assertEqual(complexes_with_obsolete_id, [("Q59FX0_1_9606", "Q59FX0")])
+        self.assertEqual(
+            complexes_with_obsolete_id,
+            [("Q59FX0_1_9606", "Q59FX0"), ("A0A003_2_67581,Q59FX0_1_9606", "Q59FX0")],
+        )
 
     def test_create_new_complex_string(self):
+        """
+        Test if the method creates the correct complex string based on updated
+        UniProt accession
+        """
+        # single complex component
         updated_complex_strings = ut.create_new_complex_string(
             [("Q59FX0_1_9606", "Q59FX0")], mock_uniprot_mapping
         )
         self.assertDictEqual(
             updated_complex_strings, {"Q59FX0_1_9606": "O95271_1_9606"}
+        )
+        # multiple complex components
+        updated_complex_strings = ut.create_new_complex_string(
+            [("A0A003_2_67581,Q59FX0_1_9606", "Q59FX0")], mock_uniprot_mapping
+        )
+        self.assertDictEqual(
+            updated_complex_strings,
+            {"A0A003_2_67581,Q59FX0_1_9606": "A0A003_2_67581,O95271_1_9606"},
         )
 
     def test_merge_csv_files(self):
