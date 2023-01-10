@@ -1,5 +1,7 @@
 import logging
+import os
 from posixpath import join as urljoin
+
 import pandas as pd
 
 
@@ -9,8 +11,12 @@ class GetComplexPortalData:
     """
 
     def __init__(self, complex_portal_path):
-        self.complex_portal_ftp_root = "ftp://ftp.ebi.ac.uk" + complex_portal_path
-        self.complex_portal_https_root = "https://ftp.ebi.ac.uk" + complex_portal_path
+        self.complex_portal_ftp_root = os.path.join(
+            "ftp://ftp.ebi.ac.uk", complex_portal_path
+        )
+        self.complex_portal_https_root = os.path.join(
+            "https://ftp.ebi.ac.uk", complex_portal_path
+        )
         self.complex_portal_components_tsv = "complex_portal_components.tsv"
         self.complex_portal_summary_tsv = "complex_portal_complexes.tsv"
         self.folders_to_check = ["released", "curation"]
