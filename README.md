@@ -36,12 +36,12 @@ A short explanation for each command line argument is given below:
 - `username` = Neo4j username
 - `password` = Neo4j password
 - `output_csv_path` = The path to the output CSV file
-- `UniProt_mapping_path` = The path to the dir containing the UniProt mapping file. A sample mapping file is provided in the sample directory.
+- `UniProt_mapping_path` = The path to the directory containing the UniProt mapping file. 
 - `complex_portal_path` = The path to the Complex Portal FTP site. Please use the following path value "pub/databases/IntAct/current/various/complex2pdb"
 
 The manually curated complexes CSV files (`complexes_molecules.csv`, `complexes_components.csv`) are provided by Romana Gaborova, EMBL-EBI.
 
-The UniProt mapping file contains the mapping between obsolete and new UniProt accessions. Users would need to update this file weekly in order to correct any entries with obsolete UniProt accessions.
+A sample UniProt mapping file is provided in the sample directory. This file contains the mapping between obsolete and new UniProt accessions. Users would need to update this file weekly in order to correct any entries with obsolete UniProt accessions.
 
 ## Documentation
 
