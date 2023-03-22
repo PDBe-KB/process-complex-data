@@ -667,9 +667,10 @@ class ProcessComplexName:
         self.unp_only_components_no_stoch.append(accession)
         self.individual_unp_component_dict.setdefault(accession, set()).add(complex_id)
         self.unp_components_with_stoch_dict[accession] = int(stoichiometry)
-        self.unp_names.add(name)
+        
         # Run the following code only when names are available
         if name:
+            self.unp_names.add(name)
             name_list = name.split(" ")
             # check the name has a name like "subunit" etc...
             self._check_excluded_names(name_list)
