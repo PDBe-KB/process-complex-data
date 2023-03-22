@@ -123,36 +123,36 @@ class Neo4JProcessComplex:
                 }
             del self.reference_mapping[obsolete_complex_hash]
 
-    def _process_remaining_complex_portal_entries(self, accessions):
-        """
-        Assign pdb_complex_id to the remaining complex compositions
-        from Complex Portal
-        Args:
-            accessions (str): Remaining complex composition strings
-                              from Complex Portal
-        """
-        accession_hash = hashlib.md5(accessions.encode("utf-8")).hexdigest()
-        complex_portal_id = self.dict_complex_portal_id[accessions]
-        entries = self.dict_complex_portal_entries.get(complex_portal_id)
-        pdb_complex_id = self._use_persistent_identifier(
-            accession_hash, accessions, complex_portal_id, entries
-        )
+    # def _process_remaining_complex_portal_entries(self, accessions):
+    #     """
+    #     Assign pdb_complex_id to the remaining complex compositions
+    #     from Complex Portal
+    #     Args:
+    #         accessions (str): Remaining complex composition strings
+    #                           from Complex Portal
+    #     """
+    #     accession_hash = hashlib.md5(accessions.encode("utf-8")).hexdigest()
+    #     complex_portal_id = self.dict_complex_portal_id[accessions]
+    #     entries = self.dict_complex_portal_entries.get(complex_portal_id)
+    #     pdb_complex_id = self._use_persistent_identifier(
+    #         accession_hash, accessions, complex_portal_id, entries
+    #     )
 
-        # keep data for each PDB complex in dict_pdb_complex to be used later
-        self.dict_pdb_complex[pdb_complex_id] = (accessions, entries)
+    #     # keep data for each PDB complex in dict_pdb_complex to be used later
+    #     self.dict_pdb_complex[pdb_complex_id] = (accessions, entries)
 
-        for item in accessions.split(","):
-            [accession, stoichiometry, _] = item.split("_")
+    #     for item in accessions.split(","):
+    #         [accession, stoichiometry, _] = item.split("_")
 
-            # this is the data from complex portal, there won't be any PDB entity
-            # as a participant
-            self.accession_params_list.append(
-                {
-                    "complex_id": str(pdb_complex_id),
-                    "accession": str(accession),
-                    "stoichiometry": str(stoichiometry),
-                }
-            )
+    #         # this is the data from complex portal, there won't be any PDB entity
+    #         # as a participant
+    #         self.accession_params_list.append(
+    #             {
+    #                 "complex_id": str(pdb_complex_id),
+    #                 "accession": str(accession),
+    #                 "stoichiometry": str(stoichiometry),
+    #             }
+    #         )
 
     def process_assembly_data(self):
         """
@@ -164,8 +164,8 @@ class Neo4JProcessComplex:
         for row in mappings:
             self._process_mapping(row)
 
-        for accessions in self.dict_complex_portal_id.keys():
-            self._process_remaining_complex_portal_entries(accessions)
+        # for accessions in self.dict_complex_portal_id.keys():
+        #     self._process_remaining_complex_portal_entries(accessions)
 
         # create list of common Complex and PDB_Complex nodes
         for common_complex in self.common_complexes:
