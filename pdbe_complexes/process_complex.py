@@ -45,10 +45,10 @@ class Neo4JProcessComplex:
         """
 
         self.get_complex_portal_data()
-        self.drop_PDBComplex_nodes()
-        self.get_reference_mapping()
-        if self.has_REFERENCE_MAPPING:
-            self.correct_uniprot_mapping()
+        # self.drop_PDBComplex_nodes()
+        # self.get_reference_mapping()
+        # if self.has_REFERENCE_MAPPING:
+        #     self.correct_uniprot_mapping()
         self.process_assembly_data()
         self.post_processing()
 
