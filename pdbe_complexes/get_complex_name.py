@@ -667,18 +667,20 @@ class ProcessComplexName:
         self.unp_only_components_no_stoch.append(accession)
         self.individual_unp_component_dict.setdefault(accession, set()).add(complex_id)
         self.unp_components_with_stoch_dict[accession] = int(stoichiometry)
-        self.unp_names.add(name)
-
-        name_list = name.split(" ")
-        # check the name has a name like "subunit" etc...
-        self._check_excluded_names(name_list)
-        component_go_terms = self.unp_component_dict.get(accession, [])
-        self.unp_name_and_accession[accession] = {
-            "name": name,
-            "go_terms": component_go_terms,
-        }
-        for go_term in component_go_terms:
-            self.go_terms.setdefault(go_term, []).append(accession)
+        
+        # Run the following code only when names are available
+        if name:
+            self.unp_names.add(name)
+            name_list = name.split(" ")
+            # check the name has a name like "subunit" etc...
+            self._check_excluded_names(name_list)
+            component_go_terms = self.unp_component_dict.get(accession, [])
+            self.unp_name_and_accession[accession] = {
+                "name": name,
+                "go_terms": component_go_terms,
+            }
+            for go_term in component_go_terms:
+                self.go_terms.setdefault(go_term, []).append(accession)
 
     def _check_excluded_names(self, name_list):
         if [x for x in name_list if x.lower() in name_exclude_list]:
