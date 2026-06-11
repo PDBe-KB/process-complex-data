@@ -1,5 +1,6 @@
 import csv
 import logging
+
 import requests
 
 
@@ -41,6 +42,8 @@ class GetAnnotatedName:
             lines = (line.decode("utf-8") for line in r.iter_lines())
             next(lines)
             for row in csv.reader(lines):
+                if not row:
+                    continue
                 complex_id = row[0].strip()
                 name = row[1].strip()
                 self.molecule_names[complex_id] = name
@@ -59,6 +62,8 @@ class GetAnnotatedName:
             lines = (line.decode("utf-8") for line in r.iter_lines())
             next(lines)
             for row in csv.reader(lines):
+                if not row:
+                    continue
                 complex_id = row[0].strip()
                 accession = row[1].strip()
                 stoichiometry = row[2].strip()
